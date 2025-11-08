@@ -409,61 +409,88 @@ class AnimatedComparison:
             if 'k' in p:
                 parts.append(f"k={p['k']}")
             ax.set_title(f"{sp.name} (" + ", ".join(parts) + ")")
-            ax.set_xlim(0, 100)
-            ax.set_ylim(-2, 8)
+            ax.set_xlim(0, 10)
+            ax.set_ylim(0, 10)
             ax.set_xticks([])
             ax.set_yticks([])
-            txt = ax.text(0.02, 0.95, '', transform=ax.transAxes, va='top', fontsize=9,
-                           bbox=dict(facecolor='white', alpha=0.7))
+            ax.set_aspect('equal')
+            txt = ax.text(0.02, 0.98, '', transform=ax.transAxes, va='top', fontsize=10,
+                           bbox=dict(facecolor='white', alpha=0.8))
             self.texts.append(txt)
-            # Sin leyenda ni curvas, solo animación de nodos
 
-            # Servidores como muñequitos (stick figures) en posiciones fijas
-            x0 = 70.0
-            dx = 5.0
-            y_base = 2.0
+            # Topología tipo red: Nodo de llegada -> Cola -> Servidores
+            # Nodo de llegada (izquierda)
+            x_arrival = 1.5
+            y_center = 5.0
+            
+            # Nodo de cola (centro)
+            x_queue = 5.0
+            
+            # Servidores (derecha)
+            x_servers = 8.5
+            
+            # Dibujar nodo de llegada (círculo grande)
+            arrival_node = Circle((x_arrival, y_center), radius=0.4, 
+                                 facecolor='lightblue', edgecolor='black', lw=2)
+            ax.add_patch(arrival_node)
+            ax.text(x_arrival, y_center-0.8, 'Llegadas', ha='center', fontsize=8)
+            
+            # Dibujar nodo de cola (rectángulo)
+            from matplotlib.patches import Rectangle, FancyBboxPatch
+            queue_node = FancyBboxPatch((x_queue-0.5, y_center-0.4), 1.0, 0.8,
+                                       boxstyle="round,pad=0.1", 
+                                       facecolor='lightyellow', edgecolor='black', lw=2)
+            ax.add_patch(queue_node)
+            ax.text(x_queue, y_center, 'Cola', ha='center', va='center', fontsize=8)
+            
+            # Línea de llegada a cola
+            line1 = Line2D([x_arrival+0.4, x_queue-0.5], [y_center, y_center], 
+                          color='black', lw=2, marker='>', markersize=8, markevery=[1])
+            ax.add_line(line1)
+            
+            # Configurar servidores según modelo
             positions: List[Tuple[float, float]] = []
             if sp.kind == 'mm1':
-                positions = [(x0, y_base)]
+                positions = [(x_servers, y_center)]
             elif sp.kind == 'mmc':
                 c = sp.params['c']
-                positions = [(x0 + cc*dx, y_base) for cc in range(c)]
+                y_start = y_center - (c-1)*0.6
+                positions = [(x_servers, y_start + i*1.2) for i in range(c)]
             elif sp.kind == 'mmk1':
                 k = sp.params['k']
-                positions = [(x0, y_base + r*1.2) for r in range(k)]
+                y_start = y_center - (k-1)*0.6
+                positions = [(x_servers, y_start + i*1.2) for i in range(k)]
             else:  # mmkc
                 k = sp.params['k']
                 c = sp.params['c']
-                for r in range(k):
-                    for cc in range(c):
-                        positions.append((x0 + cc*dx, y_base + r*1.2))
+                total = k * c
+                y_start = y_center - (total-1)*0.4
+                for idx in range(total):
+                    positions.append((x_servers, y_start + idx*0.8))
+            
             self.server_positions[i] = positions
-            # Dibujar muñequitos de servidores
+            
+            # Dibujar servidores como nodos con icono
             s_artists: List[Tuple[Circle, Line2D]] = []
-            for (sx, sy) in positions:
-                head = Circle((sx, sy), radius=0.25, facecolor=self.colors[i], edgecolor='k', lw=0.8)
-                body = Line2D([sx, sx], [sy-0.25, sy-0.9], color='k', lw=1.2)
-                ax.add_patch(head)
-                ax.add_line(body)
-                s_artists.append((head, body))
+            for idx, (sx, sy) in enumerate(positions):
+                # Nodo servidor (círculo)
+                server_circle = Circle((sx, sy), radius=0.35, 
+                                      facecolor=self.colors[i], edgecolor='black', lw=2, alpha=0.7)
+                ax.add_patch(server_circle)
+                # Icono de servidor (rectángulo pequeño dentro)
+                server_icon = Rectangle((sx-0.15, sy-0.1), 0.3, 0.2, 
+                                       facecolor='white', edgecolor='black', lw=1)
+                ax.add_patch(server_icon)
+                ax.text(sx, sy-0.6, f'S{idx+1}', ha='center', fontsize=7)
+                s_artists.append((server_circle, server_icon))
+                
+                # Línea de cola a servidor
+                line_to_server = Line2D([x_queue+0.5, sx-0.35], [y_center, sy],
+                                       color='gray', lw=1.5, linestyle='--', alpha=0.6)
+                ax.add_line(line_to_server)
+            
             self.server_artists[i] = s_artists
-
-            # Nodos de llegada (círculos) al inicio de la cola
-            arrivals: List[Circle] = []
-            x_arr = 15.0
-            if sp.kind in ('mm1', 'mmc'):
-                y_arrs = [y_base]
-            elif sp.kind == 'mmk1':
-                k = sp.params['k']
-                y_arrs = [y_base + r*1.2 for r in range(k)]
-            else:  # mmkc
-                k = sp.params['k']
-                y_arrs = [y_base + r*1.2 for r in range(k)]
-            for ya in y_arrs:
-                dot = Circle((x_arr, ya), radius=0.12, facecolor='black', alpha=0.6)
-                ax.add_patch(dot)
-                arrivals.append(dot)
-            self.arrival_nodes[i] = arrivals
+            self.arrival_nodes[i] = [arrival_node]
 
         self.anim = None
 
@@ -519,10 +546,10 @@ class AnimatedComparison:
         alive_ids = set(targets.keys())
         # Crear/actualizar sprites
         for jid, (tx, ty) in targets.items():
-            sprite = self._ensure_client_sprite(idx, jid, x=0.0, y=ty)
-            # Movimiento simple hacia el objetivo (interpolación)
+            sprite = self._ensure_client_sprite(idx, jid, x=1.5, y=5.0)
+            # Movimiento suave hacia el objetivo (interpolación)
             cx, cy = sprite['x'], sprite['y']
-            alpha = 0.35
+            alpha = 0.25  # Velocidad de movimiento
             nx = cx + alpha*(tx - cx)
             ny = cy + alpha*(ty - cy)
             self._place_client_sprite(sprite, nx, ny)
@@ -533,18 +560,17 @@ class AnimatedComparison:
     def _ensure_client_sprite(self, panel_idx: int, job_id: int, x: float, y: float):
         dct = self.client_sprites[panel_idx]
         if job_id not in dct:
-            head = Circle((x, y), radius=0.2, facecolor=self.colors[panel_idx], edgecolor='k', lw=0.5)
-            body = Line2D([x, x], [y-0.2, y-0.8], color='k', lw=1)
+            # Cliente como círculo pequeño (paquete/usuario)
+            client_circle = Circle((x, y), radius=0.15, facecolor='red', 
+                                  edgecolor='darkred', lw=1.5, alpha=0.9)
             ax = self.axes[panel_idx]
-            ax.add_patch(head)
-            ax.add_line(body)
-            dct[job_id] = {'artist': (head, body), 'x': x, 'y': y}
+            ax.add_patch(client_circle)
+            dct[job_id] = {'artist': client_circle, 'x': x, 'y': y}
         return dct[job_id]
 
     def _place_client_sprite(self, sprite: Dict, x: float, y: float):
-        head, body = sprite['artist']
-        head.center = (x, y)
-        body.set_data([x, x], [y-0.2, y-0.8])
+        client_circle = sprite['artist']
+        client_circle.center = (x, y)
         sprite['x'] = x
         sprite['y'] = y
 
@@ -552,44 +578,53 @@ class AnimatedComparison:
         dct = self.client_sprites[panel_idx]
         remove_ids = [jid for jid in dct.keys() if jid not in alive_ids]
         for jid in remove_ids:
-            head, body = dct[jid]['artist']
-            head.remove(); body.remove()
+            client_circle = dct[jid]['artist']
+            client_circle.remove()
             del dct[jid]
 
     def _layout_targets(self, idx: int) -> Dict[int, Tuple[float, float]]:
         sp = self.specs[idx]
         sim = self.sims[idx]
         targets: Dict[int, Tuple[float, float]] = {}
-        # Colas y servidores por modelo
-        x_queue_start = 20.0
-        x_queue_step = 1.2
+        
+        # Posiciones de nodos en topología
+        x_arrival = 1.5
+        x_queue = 5.0
+        y_center = 5.0
+        
+        # Posición en cola: apilados verticalmente cerca del nodo de cola
+        queue_x_offset = 3.5
+        queue_y_start = y_center + 1.0
+        queue_y_step = 0.3
+        
         if sp.kind == 'mm1':
-            # Cola única
-            yq = 2.0
-            # En cola
             if isinstance(sim, MM1):
+                # Clientes en cola
                 for pos, job in enumerate(sim.queue):
-                    targets[job.id] = (x_queue_start + pos*x_queue_step, yq)
-                # En servicio
+                    targets[job.id] = (queue_x_offset, queue_y_start + pos*queue_y_step)
+                # Cliente en servicio
                 if sim.server.current_job:
                     job = sim.server.current_job
                     sx, sy = self.server_positions[idx][0]
                     targets[job.id] = (sx, sy)
         elif sp.kind == 'mmc':
-            yq = 2.0
             if isinstance(sim, MMC):
+                # Clientes en cola
                 for pos, job in enumerate(sim.queue):
-                    targets[job.id] = (x_queue_start + pos*x_queue_step, yq)
+                    targets[job.id] = (queue_x_offset, queue_y_start + pos*queue_y_step)
+                # Clientes en servicio
                 for si, s in enumerate(sim.servers):
                     if s.current_job:
                         sx, sy = self.server_positions[idx][si]
                         targets[s.current_job.id] = (sx, sy)
         elif sp.kind == 'mmk1':
             if isinstance(sim, MMK1):
+                # Múltiples colas
                 for qi, q in enumerate(sim.queues):
-                    yq = 2.0 + qi*1.2
                     for pos, job in enumerate(q):
-                        targets[job.id] = (x_queue_start + pos*x_queue_step, yq)
+                        y_offset = queue_y_start + qi*1.5
+                        targets[job.id] = (queue_x_offset, y_offset + pos*queue_y_step)
+                # Clientes en servicio
                 for si, s in enumerate(sim.servers):
                     if s.current_job:
                         sx, sy = self.server_positions[idx][si]
@@ -598,15 +633,16 @@ class AnimatedComparison:
             if isinstance(sim, MMKC):
                 k = sp.params['k']
                 c = sp.params['c']
+                # Múltiples colas
                 for qi, q in enumerate(sim.queues):
-                    yq = 2.0 + qi*1.2
                     for pos, job in enumerate(q):
-                        targets[job.id] = (x_queue_start + pos*x_queue_step, yq)
+                        y_offset = queue_y_start + qi*1.5
+                        targets[job.id] = (queue_x_offset, y_offset + pos*queue_y_step)
+                # Clientes en servicio
                 for qi in range(k):
                     for si in range(c):
                         s = sim.servers[qi][si]
                         if s.current_job:
-                            # Mapeo de posición en lista linearizada
                             idx_lin = qi*c + si
                             sx, sy = self.server_positions[idx][idx_lin]
                             targets[s.current_job.id] = (sx, sy)
@@ -623,18 +659,8 @@ class AnimatedComparison:
         # Incluir sprites de clientes
         for sprite_map in self.client_sprites:
             for spr in sprite_map.values():
-                head, body = spr['artist']
-                artists.append(head)
-                artists.append(body)
-        # También podemos devolver artistas de servidores (opcional)
-        for s_list in self.server_artists:
-            for head, body in s_list:
-                artists.append(head)
-                artists.append(body)
-        # Nodos de llegada
-        for arr_list in self.arrival_nodes:
-            for dot in arr_list:
-                artists.append(dot)
+                client_circle = spr['artist']
+                artists.append(client_circle)
         return self.texts + artists
 
     def run(self, dt: float = 0.2, frames: int = 400, interval_ms: int = 100):
