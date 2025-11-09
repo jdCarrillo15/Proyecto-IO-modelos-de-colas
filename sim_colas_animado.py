@@ -860,11 +860,11 @@ class AnimatedComparison:
             w_times = wait_times[::sample_rate]
             wq_times = wait_times_q[::sample_rate]
             
-            # Graficar tiempos de espera
-            ax.scatter(dep_times, w_times, c='blue', s=30, alpha=0.6, 
-                      label='Tiempo en sistema (W)', edgecolors='darkblue', linewidth=0.5)
-            ax.scatter(dep_times, wq_times, c='red', s=20, alpha=0.5, 
-                      label='Tiempo en cola (Wq)', edgecolors='darkred', linewidth=0.5)
+            # Graficar tiempos de espera con líneas conectadas
+            ax.plot(dep_times, w_times, 'b-', linewidth=2, alpha=0.7, 
+                   label='Tiempo en sistema (W)', marker='o', markersize=4, markevery=max(1, len(dep_times)//50))
+            ax.plot(dep_times, wq_times, 'r--', linewidth=2, alpha=0.7, 
+                   label='Tiempo en cola (Wq)', marker='s', markersize=3, markevery=max(1, len(dep_times)//50))
             
             # Calcular límites dinámicos del eje Y
             max_val = max(max(w_times) if w_times else 1, 
@@ -923,7 +923,7 @@ if __name__ == '__main__':
         ModelSpec('M/M/1', 'mm1',  {'lam': 0.6, 'mu': 2.0}),
         ModelSpec('M/M/c', 'mmc',  {'lam': 0.7, 'mu': 2.5, 'c': 3}),
         ModelSpec('M/M/k/1', 'mmk1', {'lam': 0.8, 'mu': 2.5, 'k': 3}),
-        ModelSpec('M/M/k/c', 'mmkc', {'lam': 1, 'mu': 2.5, 'k': 2, 'c': 2}),
+        ModelSpec('M/M/k/c', 'mmkc', {'lam': 0.9, 'mu': 2.5, 'k': 2, 'c': 2}),
     ]
     anim = AnimatedComparison(specs, horizon=120.0, seed=42)
     anim.run(dt=0.2, frames=500, interval_ms=100)
