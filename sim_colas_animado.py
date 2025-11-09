@@ -1,6 +1,8 @@
 import math
 import random
 import itertools
+import warnings
+import json
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Tuple
 
@@ -43,10 +45,23 @@ class Server:
 # -----------------------------
 
 class EventSim:
-    def __init__(self, lam: float, mu: float, horizon: float):
+    def __init__(self, lam: float, mu: float, horizon: float, warmup: float = 0.0):
+        # Validación de parámetros
+        if lam <= 0:
+            raise ValueError(f"λ (tasa de llegadas) debe ser positiva, recibido: {lam}")
+        if mu <= 0:
+            raise ValueError(f"μ (tasa de servicio) debe ser positiva, recibido: {mu}")
+        if horizon <= 0:
+            raise ValueError(f"Horizonte de simulación debe ser positivo, recibido: {horizon}")
+        if warmup < 0:
+            raise ValueError(f"Periodo de warmup no puede ser negativo, recibido: {warmup}")
+        if warmup >= horizon:
+            raise ValueError(f"Periodo de warmup ({warmup}) debe ser menor que horizonte ({horizon})")
+        
         self.lam = lam
         self.mu = mu
         self.horizon = horizon
+        self.warmup = warmup  # Periodo de calentamiento
         self.time = 0.0
         self.next_arrival = expovariate(self.lam)
         self.jobs_created = 0
@@ -71,24 +86,42 @@ class EventSim:
         self.wait_times: List[float] = []
         self.wait_times_q: List[float] = []
         self.departure_times: List[float] = []
+        # Flag para indicar si estamos en periodo de warmup
+        self._in_warmup: bool = True if warmup > 0 else False
 
     def step(self):
         raise NotImplementedError
     
     def _update_areas(self):
         """Actualizar áreas para calcular L y Lq"""
-        dt = self.time - self.last_event_time
-        if dt > 0:
-            self.area_in_system += self.last_n_system * dt
-            self.area_in_queue += self.last_n_queue * dt
-        self.last_event_time = self.time
+        # Solo acumular métricas después del periodo de warmup
+        if self._in_warmup and self.time >= self.warmup:
+            # Salimos del warmup: reiniciar acumuladores
+            self._in_warmup = False
+            self.area_in_system = 0.0
+            self.area_in_queue = 0.0
+            self.total_wait_q = 0.0
+            self.count_wait_q = 0
+            self.total_wait_sys = 0.0
+            self.count_wait_sys = 0
+            self.last_event_time = self.time
+            return
+        
+        if not self._in_warmup:
+            dt = self.time - self.last_event_time
+            if dt > 0:
+                self.area_in_system += self.last_n_system * dt
+                self.area_in_queue += self.last_n_queue * dt
+            self.last_event_time = self.time
     
     def _record_state(self):
         """Registrar estado actual para series temporales"""
-        st = self.state()
-        self.time_series.append(self.time)
-        self.system_series.append(st['in_system'])
-        self.queue_series.append(st['in_queue'])
+        # Solo registrar después del warmup
+        if not self._in_warmup:
+            st = self.state()
+            self.time_series.append(self.time)
+            self.system_series.append(st['in_system'])
+            self.queue_series.append(st['in_queue'])
 
     def _new_job(self) -> Job:
         self.jobs_created += 1
@@ -97,16 +130,65 @@ class EventSim:
             t_arrival=self.time,
             service_time=expovariate(self.mu),
         )
+    
+    def export_results(self, filename: str):
+        """Exportar resultados de simulación a JSON"""
+        st = self.state()
+        effective_time = self.time - self.warmup if self.time > self.warmup else self.time
+        
+        data = {
+            'parameters': {
+                'lambda': self.lam,
+                'mu': self.mu,
+                'horizon': self.horizon,
+                'warmup': self.warmup,
+            },
+            'metrics': {
+                'rho': st.get('rho', 0.0),
+                'L_avg': st.get('l_avg', 0.0),
+                'Lq_avg': st.get('lq_avg', 0.0),
+                'W_avg': st.get('w_avg', 0.0),
+                'Wq_avg': st.get('wq_avg', 0.0),
+                'served': st.get('served', 0),
+                'rejected': st.get('rejected', 0),
+                'simulation_time': self.time,
+                'effective_time': effective_time,
+            },
+            'time_series': {
+                't': self.time_series,
+                'L': self.system_series,
+                'Lq': self.queue_series,
+            },
+            'wait_times': {
+                'W': self.wait_times,
+                'Wq': self.wait_times_q,
+                'departure_times': self.departure_times,
+            }
+        }
+        
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        print(f"✓ Resultados exportados a: {filename}")
 
 # -----------------------------
 # Modelos concretos
 # -----------------------------
 
 class MM1(EventSim):
-    def __init__(self, lam: float, mu: float, horizon: float):
-        super().__init__(lam, mu, horizon)
+    def __init__(self, lam: float, mu: float, horizon: float, warmup: float = 0.0):
+        super().__init__(lam, mu, horizon, warmup)
         self.server = Server()
         self.queue: List[Job] = []
+        
+        # Advertencia de sistema inestable
+        rho = lam / mu
+        if rho >= 1.0:
+            warnings.warn(
+                f"⚠️ Sistema M/M/1 inestable: ρ = λ/μ = {rho:.3f} ≥ 1. "
+                f"La cola crecerá indefinidamente.", 
+                category=UserWarning
+            )
 
     def utilization(self) -> float:
         return min(1.0, self.lam / self.mu) if self.mu > 0 else 0.0
@@ -114,6 +196,8 @@ class MM1(EventSim):
     def state(self) -> Dict:
         n_system = len(self.queue) + (1 if self.server.current_job else 0)
         n_queue = len(self.queue)
+        # Calcular tiempo efectivo (después del warmup)
+        effective_time = max(0.0, self.time - self.warmup)
         return {
             't': self.time,
             'in_system': n_system,
@@ -123,17 +207,18 @@ class MM1(EventSim):
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
             'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
-            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
-            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / effective_time) if effective_time > 0 else 0.0,
+            'l_avg': (self.area_in_system / effective_time) if effective_time > 0 else 0.0,
         }
 
     def _maybe_start_service(self):
         if (self.server.current_job is None) and self.queue:
             job = self.queue.pop(0)
             job.t_service_start = self.time
-            # Acumular espera en cola
-            self.total_wait_q += (job.t_service_start - job.t_arrival)
-            self.count_wait_q += 1
+            # Acumular espera en cola (solo después del warmup)
+            if not self._in_warmup:
+                self.total_wait_q += (job.t_service_start - job.t_arrival)
+                self.count_wait_q += 1
             self.server.current_job = job
             self.server.busy_until = self.time + job.service_time
 
@@ -164,23 +249,35 @@ class MM1(EventSim):
             if job:
                 job.t_departure = self.time
                 self.completed.append(job)
-                # Acumular tiempo en sistema
+                # Acumular tiempo en sistema (solo después del warmup)
                 wait_sys = job.t_departure - job.t_arrival
                 wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
-                self.total_wait_sys += wait_sys
-                self.count_wait_sys += 1
-                # Registrar para gráficos
-                self.departure_times.append(self.time)
-                self.wait_times.append(wait_sys)
-                self.wait_times_q.append(wait_q)
+                if not self._in_warmup:
+                    self.total_wait_sys += wait_sys
+                    self.count_wait_sys += 1
+                    # Registrar para gráficos
+                    self.departure_times.append(self.time)
+                    self.wait_times.append(wait_sys)
+                    self.wait_times_q.append(wait_q)
             self.server.current_job = None
             self._maybe_start_service()
 
 class MMC(EventSim):
-    def __init__(self, lam: float, mu: float, c: int, horizon: float):
-        super().__init__(lam, mu, horizon)
+    def __init__(self, lam: float, mu: float, c: int, horizon: float, warmup: float = 0.0):
+        if c <= 0:
+            raise ValueError(f"Número de servidores (c) debe ser positivo, recibido: {c}")
+        super().__init__(lam, mu, horizon, warmup)
         self.servers: List[Server] = [Server() for _ in range(c)]
         self.queue: List[Job] = []
+        
+        # Advertencia de sistema inestable
+        rho = lam / (mu * c)
+        if rho >= 1.0:
+            warnings.warn(
+                f"⚠️ Sistema M/M/c inestable: ρ = λ/(c·μ) = {rho:.3f} ≥ 1 con c={c}. "
+                f"La cola crecerá indefinidamente.", 
+                category=UserWarning
+            )
 
     def utilization(self) -> float:
         c = len(self.servers)
@@ -189,6 +286,8 @@ class MMC(EventSim):
     def state(self) -> Dict:
         busy = sum(1 for s in self.servers if s.current_job)
         n_system = len(self.queue) + busy
+        # Calcular tiempo efectivo (después del warmup)
+        effective_time = max(0.0, self.time - self.warmup)
         return {
             't': self.time,
             'in_system': n_system,
@@ -198,8 +297,8 @@ class MMC(EventSim):
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
             'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
-            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
-            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / effective_time) if effective_time > 0 else 0.0,
+            'l_avg': (self.area_in_system / effective_time) if effective_time > 0 else 0.0,
         }
 
     def _maybe_start_service(self):
@@ -209,8 +308,10 @@ class MMC(EventSim):
             if s.current_job is None:
                 job = self.queue.pop(0)
                 job.t_service_start = self.time
-                self.total_wait_q += (job.t_service_start - job.t_arrival)
-                self.count_wait_q += 1
+                # Acumular espera en cola (solo después del warmup)
+                if not self._in_warmup:
+                    self.total_wait_q += (job.t_service_start - job.t_arrival)
+                    self.count_wait_q += 1
                 s.current_job = job
                 s.busy_until = self.time + job.service_time
 
@@ -229,11 +330,15 @@ class MMC(EventSim):
             if s.current_job and s.busy_until < next_depart:
                 next_depart = s.busy_until
                 depart_server_idx = i
+        
         # Elegir mínimo entre llegada y salida
-        t_next = min(self.next_arrival, next_depart, self.horizon)
-        if t_next == self.horizon and self.horizon < float('inf'):
+        t_next = min(self.next_arrival, next_depart)
+        
+        # Manejo unificado de fin de simulación
+        if t_next >= self.horizon:
             self.time = self.horizon
             return
+        
         if self.next_arrival <= next_depart:
             # Llegada
             self.time = self.next_arrival
@@ -244,7 +349,8 @@ class MMC(EventSim):
         else:
             # Salida
             if depart_server_idx is None:
-                self.time = t_next
+                # No hay más eventos de salida, avanzar al horizonte
+                self.time = self.horizon
                 return
             self.time = next_depart
             s = self.servers[depart_server_idx]
@@ -254,12 +360,14 @@ class MMC(EventSim):
                 self.completed.append(job)
                 wait_sys = job.t_departure - job.t_arrival
                 wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
-                self.total_wait_sys += wait_sys
-                self.count_wait_sys += 1
-                # Registrar para gráficos
-                self.departure_times.append(self.time)
-                self.wait_times.append(wait_sys)
-                self.wait_times_q.append(wait_q)
+                # Acumular tiempo en sistema (solo después del warmup)
+                if not self._in_warmup:
+                    self.total_wait_sys += wait_sys
+                    self.count_wait_sys += 1
+                    # Registrar para gráficos
+                    self.departure_times.append(self.time)
+                    self.wait_times.append(wait_sys)
+                    self.wait_times_q.append(wait_q)
             s.current_job = None
             self._maybe_start_service()
 
@@ -267,19 +375,32 @@ class MMK1(EventSim):
     """
     k colas paralelas, 1 servidor por cola, asignación por cola más corta.
     """
-    def __init__(self, lam: float, mu: float, k: int, horizon: float):
-        super().__init__(lam, mu, horizon)
+    def __init__(self, lam: float, mu: float, k: int, horizon: float, warmup: float = 0.0):
+        if k <= 0:
+            raise ValueError(f"Número de colas (k) debe ser positivo, recibido: {k}")
+        super().__init__(lam, mu, horizon, warmup)
         self.k = k
         self.servers: List[Server] = [Server() for _ in range(k)]
         self.queues: List[List[Job]] = [[] for _ in range(k)]
+        
+        # Advertencia de sistema inestable
+        rho_per_queue = (lam / k) / mu
+        if rho_per_queue >= 1.0:
+            warnings.warn(
+                f"⚠️ Sistema M/M/k/1 potencialmente inestable: ρ_por_cola = (λ/k)/μ = {rho_per_queue:.3f} ≥ 1 con k={k}. "
+                f"Nota: La carga real depende de la política de asignación.", 
+                category=UserWarning
+            )
 
     def utilization(self) -> float:
-        # Carga promedio por servidor
+        # Carga promedio por servidor (asumiendo distribución equitativa)
         return min(1.0, (self.lam / self.k) / self.mu) if self.k > 0 and self.mu > 0 else 0.0
 
     def state(self) -> Dict:
         busy = sum(1 for s in self.servers if s.current_job)
         n_queue = sum(len(q) for q in self.queues)
+        # Calcular tiempo efectivo (después del warmup)
+        effective_time = max(0.0, self.time - self.warmup)
         return {
             't': self.time,
             'in_system': n_queue + busy,
@@ -289,8 +410,8 @@ class MMK1(EventSim):
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
             'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
-            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
-            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / effective_time) if effective_time > 0 else 0.0,
+            'l_avg': (self.area_in_system / effective_time) if effective_time > 0 else 0.0,
         }
 
     def _maybe_start_service(self, idx: int):
@@ -299,8 +420,10 @@ class MMK1(EventSim):
         if s.current_job is None and q:
             job = q.pop(0)
             job.t_service_start = self.time
-            self.total_wait_q += (job.t_service_start - job.t_arrival)
-            self.count_wait_q += 1
+            # Acumular espera en cola (solo después del warmup)
+            if not self._in_warmup:
+                self.total_wait_q += (job.t_service_start - job.t_arrival)
+                self.count_wait_q += 1
             s.current_job = job
             s.busy_until = self.time + job.service_time
 
@@ -320,25 +443,30 @@ class MMK1(EventSim):
             if s.current_job and s.busy_until < next_depart:
                 next_depart = s.busy_until
                 idx_dep = i
-        t_next = min(self.next_arrival, next_depart, self.horizon)
-        if t_next == self.horizon and self.horizon < float('inf'):
+        
+        t_next = min(self.next_arrival, next_depart)
+        
+        # Manejo unificado de fin de simulación
+        if t_next >= self.horizon:
             self.time = self.horizon
             return
+        
         if self.next_arrival <= next_depart:
             self.time = self.next_arrival
             job = self._new_job()
-            # Asignar a la cola más corta (empates al azar)
+            # Política determinista (menor índice) en caso de empate
             lengths = [len(q) + (1 if s.current_job else 0) for q, s in zip(self.queues, self.servers)]
             m = min(lengths)
-            candidates = [i for i, L in enumerate(lengths) if L == m]
-            idx = random.choice(candidates)
+            # Seleccionar el primer índice con longitud mínima (determinista)
+            idx = next(i for i, L in enumerate(lengths) if L == m)
             self.queues[idx].append(job)
             self.next_arrival = self.time + expovariate(self.lam)
             self._maybe_start_service(idx)
         else:
             # Salida
             if idx_dep is None:
-                self.time = t_next
+                # No hay más eventos de salida, avanzar al horizonte
+                self.time = self.horizon
                 return
             self.time = next_depart
             s = self.servers[idx_dep]
@@ -348,12 +476,14 @@ class MMK1(EventSim):
                 self.completed.append(job)
                 wait_sys = job.t_departure - job.t_arrival
                 wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
-                self.total_wait_sys += wait_sys
-                self.count_wait_sys += 1
-                # Registrar para gráficos
-                self.departure_times.append(self.time)
-                self.wait_times.append(wait_sys)
-                self.wait_times_q.append(wait_q)
+                # Acumular tiempo en sistema (solo después del warmup)
+                if not self._in_warmup:
+                    self.total_wait_sys += wait_sys
+                    self.count_wait_sys += 1
+                    # Registrar para gráficos
+                    self.departure_times.append(self.time)
+                    self.wait_times.append(wait_sys)
+                    self.wait_times_q.append(wait_q)
             s.current_job = None
             self._maybe_start_service(idx_dep)
 
@@ -361,12 +491,26 @@ class MMKC(EventSim):
     """
     k colas, c servidores por cola (servicio por cola), asignación a cola más corta.
     """
-    def __init__(self, lam: float, mu: float, k: int, c: int, horizon: float):
-        super().__init__(lam, mu, horizon)
+    def __init__(self, lam: float, mu: float, k: int, c: int, horizon: float, warmup: float = 0.0):
+        if k <= 0:
+            raise ValueError(f"Número de colas (k) debe ser positivo, recibido: {k}")
+        if c <= 0:
+            raise ValueError(f"Número de servidores por cola (c) debe ser positivo, recibido: {c}")
+        super().__init__(lam, mu, horizon, warmup)
         self.k = k
         self.c = c
         self.servers: List[List[Server]] = [[Server() for _ in range(c)] for _ in range(k)]
         self.queues: List[List[Job]] = [[] for _ in range(k)]
+        
+        # ✅ Advertencia de sistema inestable
+        total_servers = k * c
+        rho = lam / (mu * total_servers)
+        if rho >= 1.0:
+            warnings.warn(
+                f"⚠️ Sistema M/M/k/c potencialmente inestable: ρ = λ/(k·c·μ) = {rho:.3f} ≥ 1 con k={k}, c={c}. "
+                f"Nota: La carga real depende de la política de asignación.", 
+                category=UserWarning
+            )
 
     def utilization(self) -> float:
         total_servers = self.k * self.c
@@ -375,6 +519,8 @@ class MMKC(EventSim):
     def state(self) -> Dict:
         busy = sum(1 for col in self.servers for s in col if s.current_job)
         n_queue = sum(len(q) for q in self.queues)
+        # Calcular tiempo efectivo (después del warmup)
+        effective_time = max(0.0, self.time - self.warmup)
         return {
             't': self.time,
             'in_system': n_queue + busy,
@@ -384,8 +530,8 @@ class MMKC(EventSim):
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
             'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
-            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
-            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / effective_time) if effective_time > 0 else 0.0,
+            'l_avg': (self.area_in_system / effective_time) if effective_time > 0 else 0.0,
         }
 
     def _maybe_start_service(self, qi: int):
@@ -396,8 +542,10 @@ class MMKC(EventSim):
             if s.current_job is None and q:
                 job = q.pop(0)
                 job.t_service_start = self.time
-                self.total_wait_q += (job.t_service_start - job.t_arrival)
-                self.count_wait_q += 1
+                # Acumular espera en cola (solo después del warmup)
+                if not self._in_warmup:
+                    self.total_wait_q += (job.t_service_start - job.t_arrival)
+                    self.count_wait_q += 1
                 s.current_job = job
                 s.busy_until = self.time + job.service_time
 
@@ -418,25 +566,30 @@ class MMKC(EventSim):
                 if s.current_job and s.busy_until < next_depart:
                     next_depart = s.busy_until
                     dep_qi, dep_si = qi, si
-        t_next = min(self.next_arrival, next_depart, self.horizon)
-        if t_next == self.horizon and self.horizon < float('inf'):
+        
+        t_next = min(self.next_arrival, next_depart)
+        
+        # Manejo unificado de fin de simulación
+        if t_next >= self.horizon:
             self.time = self.horizon
             return
+        
         if self.next_arrival <= next_depart:
             self.time = self.next_arrival
             job = self._new_job()
-            # Elegir cola más corta (considerando servidores ocupados)
+            # Política determinista (menor índice) en caso de empate
             lengths = [len(q) + sum(1 for s in col if s.current_job) for q, col in zip(self.queues, self.servers)]
             m = min(lengths)
-            cands = [i for i, L in enumerate(lengths) if L == m]
-            qi = random.choice(cands)
+            # Seleccionar el primer índice con longitud mínima (determinista)
+            qi = next(i for i, L in enumerate(lengths) if L == m)
             self.queues[qi].append(job)
             self.next_arrival = self.time + expovariate(self.lam)
             self._maybe_start_service(qi)
         else:
             # Salida
             if dep_qi is None:
-                self.time = t_next
+                # No hay más eventos de salida, avanzar al horizonte
+                self.time = self.horizon
                 return
             self.time = next_depart
             s = self.servers[dep_qi][dep_si]
@@ -446,12 +599,14 @@ class MMKC(EventSim):
                 self.completed.append(job)
                 wait_sys = job.t_departure - job.t_arrival
                 wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
-                self.total_wait_sys += wait_sys
-                self.count_wait_sys += 1
-                # Registrar para gráficos
-                self.departure_times.append(self.time)
-                self.wait_times.append(wait_sys)
-                self.wait_times_q.append(wait_q)
+                # Acumular tiempo en sistema (solo después del warmup)
+                if not self._in_warmup:
+                    self.total_wait_sys += wait_sys
+                    self.count_wait_sys += 1
+                    # Registrar para gráficos
+                    self.departure_times.append(self.time)
+                    self.wait_times.append(wait_sys)
+                    self.wait_times_q.append(wait_q)
             s.current_job = None
             self._maybe_start_service(dep_qi)
 
