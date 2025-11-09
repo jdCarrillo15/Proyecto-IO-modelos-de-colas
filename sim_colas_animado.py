@@ -52,12 +52,43 @@ class EventSim:
         self.jobs_created = 0
         self.jobs: List[Job] = []
         self.completed: List[Job] = []
-        # Acumuladores para tiempo de espera en cola (Wq)
+        # Acumuladores para tiempo de espera en cola (Wq) y en sistema (W)
         self.total_wait_q: float = 0.0
         self.count_wait_q: int = 0
+        self.total_wait_sys: float = 0.0
+        self.count_wait_sys: int = 0
+        # Acumuladores para área bajo la curva (para L y Lq)
+        self.area_in_system: float = 0.0
+        self.area_in_queue: float = 0.0
+        self.last_event_time: float = 0.0
+        self.last_n_system: int = 0
+        self.last_n_queue: int = 0
+        # Series temporales para gráficos
+        self.time_series: List[float] = []
+        self.system_series: List[int] = []
+        self.queue_series: List[int] = []
+        # Series para tiempos de espera individuales
+        self.wait_times: List[float] = []
+        self.wait_times_q: List[float] = []
+        self.departure_times: List[float] = []
 
     def step(self):
         raise NotImplementedError
+    
+    def _update_areas(self):
+        """Actualizar áreas para calcular L y Lq"""
+        dt = self.time - self.last_event_time
+        if dt > 0:
+            self.area_in_system += self.last_n_system * dt
+            self.area_in_queue += self.last_n_queue * dt
+        self.last_event_time = self.time
+    
+    def _record_state(self):
+        """Registrar estado actual para series temporales"""
+        st = self.state()
+        self.time_series.append(self.time)
+        self.system_series.append(st['in_system'])
+        self.queue_series.append(st['in_queue'])
 
     def _new_job(self) -> Job:
         self.jobs_created += 1
@@ -91,6 +122,9 @@ class MM1(EventSim):
             'rejected': 0,
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
+            'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
+            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
         }
 
     def _maybe_start_service(self):
@@ -104,6 +138,12 @@ class MM1(EventSim):
             self.server.busy_until = self.time + job.service_time
 
     def step(self):
+        # Actualizar áreas antes del evento
+        self.last_n_system = len(self.queue) + (1 if self.server.current_job else 0)
+        self.last_n_queue = len(self.queue)
+        self._update_areas()
+        self._record_state()
+        
         # Próximo evento: llegada o salida
         t_depart = self.server.busy_until if self.server.current_job else float('inf')
         if self.next_arrival <= t_depart and self.next_arrival <= self.horizon:
@@ -124,6 +164,15 @@ class MM1(EventSim):
             if job:
                 job.t_departure = self.time
                 self.completed.append(job)
+                # Acumular tiempo en sistema
+                wait_sys = job.t_departure - job.t_arrival
+                wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
+                self.total_wait_sys += wait_sys
+                self.count_wait_sys += 1
+                # Registrar para gráficos
+                self.departure_times.append(self.time)
+                self.wait_times.append(wait_sys)
+                self.wait_times_q.append(wait_q)
             self.server.current_job = None
             self._maybe_start_service()
 
@@ -148,6 +197,9 @@ class MMC(EventSim):
             'rejected': 0,
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
+            'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
+            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
         }
 
     def _maybe_start_service(self):
@@ -163,6 +215,13 @@ class MMC(EventSim):
                 s.busy_until = self.time + job.service_time
 
     def step(self):
+        # Actualizar áreas
+        busy = sum(1 for s in self.servers if s.current_job)
+        self.last_n_system = len(self.queue) + busy
+        self.last_n_queue = len(self.queue)
+        self._update_areas()
+        self._record_state()
+        
         # Calcular próxima salida
         next_depart = float('inf')
         depart_server_idx = None
@@ -193,6 +252,14 @@ class MMC(EventSim):
             if job:
                 job.t_departure = self.time
                 self.completed.append(job)
+                wait_sys = job.t_departure - job.t_arrival
+                wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
+                self.total_wait_sys += wait_sys
+                self.count_wait_sys += 1
+                # Registrar para gráficos
+                self.departure_times.append(self.time)
+                self.wait_times.append(wait_sys)
+                self.wait_times_q.append(wait_q)
             s.current_job = None
             self._maybe_start_service()
 
@@ -221,6 +288,9 @@ class MMK1(EventSim):
             'rejected': 0,
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
+            'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
+            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
         }
 
     def _maybe_start_service(self, idx: int):
@@ -235,6 +305,14 @@ class MMK1(EventSim):
             s.busy_until = self.time + job.service_time
 
     def step(self):
+        # Actualizar áreas
+        busy = sum(1 for s in self.servers if s.current_job)
+        n_queue = sum(len(q) for q in self.queues)
+        self.last_n_system = n_queue + busy
+        self.last_n_queue = n_queue
+        self._update_areas()
+        self._record_state()
+        
         # Próxima salida por cola
         next_depart = float('inf')
         idx_dep = None
@@ -268,6 +346,14 @@ class MMK1(EventSim):
             if job:
                 job.t_departure = self.time
                 self.completed.append(job)
+                wait_sys = job.t_departure - job.t_arrival
+                wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
+                self.total_wait_sys += wait_sys
+                self.count_wait_sys += 1
+                # Registrar para gráficos
+                self.departure_times.append(self.time)
+                self.wait_times.append(wait_sys)
+                self.wait_times_q.append(wait_q)
             s.current_job = None
             self._maybe_start_service(idx_dep)
 
@@ -297,6 +383,9 @@ class MMKC(EventSim):
             'rejected': 0,
             'rho': self.utilization(),
             'wq_avg': (self.total_wait_q / self.count_wait_q) if self.count_wait_q > 0 else 0.0,
+            'w_avg': (self.total_wait_sys / self.count_wait_sys) if self.count_wait_sys > 0 else 0.0,
+            'lq_avg': (self.area_in_queue / self.time) if self.time > 0 else 0.0,
+            'l_avg': (self.area_in_system / self.time) if self.time > 0 else 0.0,
         }
 
     def _maybe_start_service(self, qi: int):
@@ -313,6 +402,14 @@ class MMKC(EventSim):
                 s.busy_until = self.time + job.service_time
 
     def step(self):
+        # Actualizar áreas
+        busy = sum(1 for col in self.servers for s in col if s.current_job)
+        n_queue = sum(len(q) for q in self.queues)
+        self.last_n_system = n_queue + busy
+        self.last_n_queue = n_queue
+        self._update_areas()
+        self._record_state()
+        
         # Próxima salida global
         next_depart = float('inf')
         dep_qi, dep_si = None, None
@@ -347,6 +444,14 @@ class MMKC(EventSim):
             if job:
                 job.t_departure = self.time
                 self.completed.append(job)
+                wait_sys = job.t_departure - job.t_arrival
+                wait_q = job.t_service_start - job.t_arrival if job.t_service_start else 0.0
+                self.total_wait_sys += wait_sys
+                self.count_wait_sys += 1
+                # Registrar para gráficos
+                self.departure_times.append(self.time)
+                self.wait_times.append(wait_sys)
+                self.wait_times_q.append(wait_q)
             s.current_job = None
             self._maybe_start_service(dep_qi)
 
@@ -676,18 +781,149 @@ class AnimatedComparison:
         )
         plt.tight_layout()
         plt.show()
+        
+        # Generar reporte post-simulación
+        self._generate_report()
+    
+    def _generate_report(self):
+        """Generar reporte de métricas post-simulación"""
+        print("\n" + "="*80)
+        print("REPORTE DE MÉTRICAS POST-SIMULACIÓN")
+        print("="*80)
+        print(f"Horizonte de simulación: {self.horizon:.2f} unidades de tiempo\n")
+        
+        # Tabla comparativa
+        print(f"{'Modelo':<15} {'λ':<8} {'μ':<8} {'c/k':<8} {'ρ':<8} {'Wq':<10} {'W':<10} {'Lq':<10} {'L':<10} {'Atendidos':<12}")
+        print("-"*110)
+        
+        for i, (spec, sim) in enumerate(zip(self.specs, self.sims)):
+            # Completar simulación hasta el horizonte
+            while sim.time < sim.horizon:
+                sim.step()
+            
+            st = sim.state()
+            p = spec.params
+            
+            # Formatear parámetros según modelo
+            if spec.kind == 'mm1':
+                ck_str = "-"
+            elif spec.kind == 'mmc':
+                ck_str = f"c={p['c']}"
+            elif spec.kind == 'mmk1':
+                ck_str = f"k={p['k']}"
+            else:  # mmkc
+                ck_str = f"k={p['k']},c={p['c']}"
+            
+            print(f"{spec.name:<15} {p['lam']:<8.2f} {p['mu']:<8.2f} {ck_str:<8} "
+                  f"{st['rho']:<8.3f} {st['wq_avg']:<10.3f} {st['w_avg']:<10.3f} "
+                  f"{st['lq_avg']:<10.3f} {st['l_avg']:<10.3f} {st['served']:<12}")
+        
+        print("\n" + "="*80)
+        print("LEYENDA:")
+        print("  λ  = Tasa de llegadas (clientes/tiempo)")
+        print("  μ  = Tasa de servicio (clientes/tiempo)")
+        print("  c  = Número de servidores")
+        print("  k  = Número de colas")
+        print("  ρ  = Utilización del sistema")
+        print("  Wq = Tiempo promedio de espera en cola")
+        print("  W  = Tiempo promedio en el sistema")
+        print("  Lq = Número promedio de clientes en cola")
+        print("  L  = Número promedio de clientes en el sistema")
+        print("="*80 + "\n")
+        
+        # Generar gráfico de series temporales
+        self._plot_time_series()
+    
+    def _plot_time_series(self):
+        """Generar gráfico de tiempo en el sistema vs tiempo de simulación"""
+        fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+        axes = axes.flatten()
+        
+        for i, (spec, sim, ax) in enumerate(zip(self.specs, self.sims, axes)):
+            p = spec.params
+            
+            if not sim.departure_times:
+                # Si no hay datos, mostrar mensaje
+                ax.text(0.5, 0.5, 'Sin datos suficientes', 
+                       transform=ax.transAxes, ha='center', va='center')
+                ax.set_title(f"{spec.name}", fontsize=13, fontweight='bold', pad=10)
+                continue
+            
+            # Usar datos de tiempos de espera
+            departure_times = sim.departure_times
+            wait_times = sim.wait_times
+            wait_times_q = sim.wait_times_q
+            
+            # Submuestrear si hay demasiados puntos
+            sample_rate = max(1, len(departure_times) // 500)
+            dep_times = departure_times[::sample_rate]
+            w_times = wait_times[::sample_rate]
+            wq_times = wait_times_q[::sample_rate]
+            
+            # Graficar tiempos de espera
+            ax.scatter(dep_times, w_times, c='blue', s=30, alpha=0.6, 
+                      label='Tiempo en sistema (W)', edgecolors='darkblue', linewidth=0.5)
+            ax.scatter(dep_times, wq_times, c='red', s=20, alpha=0.5, 
+                      label='Tiempo en cola (Wq)', edgecolors='darkred', linewidth=0.5)
+            
+            # Calcular límites dinámicos del eje Y
+            max_val = max(max(w_times) if w_times else 1, 
+                         max(wq_times) if wq_times else 1)
+            ax.set_ylim(-0.05, max_val * 1.15)
+            
+            # Configurar ejes
+            ax.set_xlabel('Tiempo de simulación (unidades)', fontsize=11, fontweight='bold')
+            ax.set_ylabel('Tiempo de espera (unidades)', fontsize=11, fontweight='bold')
+            ax.set_title(f"{spec.name}", fontsize=13, fontweight='bold', pad=10)
+            ax.grid(True, alpha=0.4, linestyle='--', linewidth=0.5)
+            ax.legend(loc='upper right', fontsize=10, framealpha=0.9)
+            
+            # Agregar información de parámetros y métricas
+            if spec.kind == 'mm1':
+                param_text = f"λ={p['lam']:.1f}, μ={p['mu']:.1f}"
+            elif spec.kind == 'mmc':
+                param_text = f"λ={p['lam']:.1f}, μ={p['mu']:.1f}, c={p['c']}"
+            elif spec.kind == 'mmk1':
+                param_text = f"λ={p['lam']:.1f}, μ={p['mu']:.1f}, k={p['k']}"
+            else:  # mmkc
+                param_text = f"λ={p['lam']:.1f}, μ={p['mu']:.1f}, k={p['k']}, c={p['c']}"
+            
+            st = sim.state()
+            stats_text = (f"{param_text}\n"
+                         f"ρ={st['rho']:.3f}\n"
+                         f"W̄={st['w_avg']:.3f}, W̄q={st['wq_avg']:.3f}\n"
+                         f"L̄={st['l_avg']:.2f}, L̄q={st['lq_avg']:.2f}\n"
+                         f"Clientes: {st['served']}")
+            
+            ax.text(0.02, 0.98, stats_text, transform=ax.transAxes,
+                   fontsize=9, verticalalignment='top',
+                   bbox=dict(boxstyle='round', facecolor='lightyellow', 
+                            edgecolor='gray', alpha=0.9, pad=0.5),
+                   family='monospace')
+            
+            # Añadir línea horizontal para promedio de tiempo en sistema
+            ax.axhline(y=st['w_avg'], color='blue', linestyle=':', 
+                      linewidth=2, alpha=0.6, label=f"W̄ promedio")
+            # Añadir línea horizontal para promedio de tiempo en cola
+            ax.axhline(y=st['wq_avg'], color='red', linestyle=':', 
+                      linewidth=2, alpha=0.6, label=f"W̄q promedio")
+        
+        plt.suptitle('Evolución Temporal: Tiempo en Sistema por Cliente', 
+                    fontsize=15, fontweight='bold', y=0.995)
+        plt.tight_layout()
+        plt.show()
 
 # -----------------------------
 # Punto de entrada
 # -----------------------------
 
 if __name__ == '__main__':
-    # Parámetros por defecto (estables)
+    # Parámetros por defecto (estables, con frecuencias reducidas para mejor observación)
     specs = [
-        ModelSpec('M/M/1', 'mm1',  {'lam': 2.0, 'mu': 3.0}),
-        ModelSpec('M/M/c', 'mmc',  {'lam': 5.0, 'mu': 3.0, 'c': 3}),
-        ModelSpec('M/M/k/1', 'mmk1', {'lam': 6.0, 'mu': 4.0, 'k': 3}),
-        ModelSpec('M/M/k/c', 'mmkc', {'lam': 8.0, 'mu': 4.0, 'k': 2, 'c': 2}),
+        ModelSpec('M/M/1', 'mm1',  {'lam': 0.6, 'mu': 2.0}),
+        ModelSpec('M/M/c', 'mmc',  {'lam': 0.7, 'mu': 2.5, 'c': 3}),
+        ModelSpec('M/M/k/1', 'mmk1', {'lam': 0.8, 'mu': 2.5, 'k': 3}),
+        ModelSpec('M/M/k/c', 'mmkc', {'lam': 1, 'mu': 2.5, 'k': 2, 'c': 2}),
     ]
     anim = AnimatedComparison(specs, horizon=120.0, seed=42)
     anim.run(dt=0.2, frames=500, interval_ms=100)
