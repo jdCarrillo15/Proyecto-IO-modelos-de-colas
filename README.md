@@ -1,38 +1,8 @@
-# 🎯 Sistema de Simulación de Colas - Proyecto IO
-
-<div align="center">
-
-![Version](https://img.shields.io/badge/version-2.0-blue.svg)
-![License](https://img.shields.io/badge/license-Educational-green.svg)
-![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
-![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)
+# Sistema de Simulación de Colas - Proyecto IO
 
 **Simulador interactivo de teoría de colas con aplicación web moderna y análisis avanzado en Python**
 
-[🚀 Inicio Rápido](#-inicio-rápido) • [📖 Manual de Usuario](MANUAL_USUARIO.md) • [🎓 Documentación](#-documentación) • [🐛 Reportar Bug](../../issues)
-
 </div>
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Descripción General](#-descripción-general)
-- [Características Principales](#-características-principales)
-- [Inicio Rápido](#-inicio-rápido)
-- [Modelos Implementados](#-modelos-implementados)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Documentación](#-documentación)
-- [Ejemplos de Uso](#-ejemplos-de-uso)
-- [Requisitos del Sistema](#-requisitos-del-sistema)
-- [Instalación](#-instalación)
-- [Guía de Uso](#-guía-de-uso)
-- [Casos de Uso Prácticos](#-casos-de-uso-prácticos)
-- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
-- [Testing y Validación](#-testing-y-validación)
-- [Solución de Problemas](#-solución-de-problemas)
-- [Contribución](#-contribución)
-- [Créditos y Licencia](#-créditos-y-licencia)
 
 ---
 
@@ -44,18 +14,18 @@ Combina una **aplicación web moderna** con animaciones en tiempo real y **herra
 
 ### ¿Por qué usar este simulador?
 
-- ✅ **Aprendizaje Visual**: Observa cómo funcionan los sistemas de colas en tiempo real
-- ✅ **Validación Teórica**: Compara resultados de simulación con fórmulas analíticas
-- ✅ **Sin Instalación**: La versión web funciona directamente en el navegador
-- ✅ **Análisis Profundo**: Scripts Python para investigación avanzada
-- ✅ **Profesional**: Interfaz moderna con exportación de datos
-- ✅ **Educativo**: Ideal para enseñanza e investigación académica
+- **Aprendizaje Visual**: Observa cómo funcionan los sistemas de colas en tiempo real
+- **Validación Teórica**: Compara resultados de simulación con fórmulas analíticas
+- **Sin Instalación**: La versión web funciona directamente en el navegador
+- **Análisis Profundo**: Scripts Python para investigación avanzada
+- **Profesional**: Interfaz moderna con exportación de datos
+- **Educativo**: Ideal para enseñanza e investigación académica
 
 ---
 
-## ⭐ Características Principales
+## Características Principales
 
-### 🌐 Aplicación Web Interactiva
+### Aplicación Web Interactiva
 
 <table>
 <tr>
@@ -94,49 +64,7 @@ Combina una **aplicación web moderna** con animaciones en tiempo real y **herra
 
 ---
 
-## 🚀 Inicio Rápido
-
-### Opción 1: Aplicación Web (Recomendada) ⚡
-
-**¡Sin instalación! Solo necesitas un navegador web.**
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/jdCarrillo15/Proyecto-IO-modelos-de-colas.git
-
-# Abrir la aplicación
-cd Proyecto-IO-modelos-de-colas
-# Doble clic en: web-app/index.html
-# O abrir: INICIO.html
-```
-
-**Acceso directo:**
-- 📁 `web-app/index.html` - Aplicación principal
-- 🏠 `INICIO.html` - Página de bienvenida con enlaces
-
-### Opción 2: Scripts Python (Para Desarrollo) 🔧
-
-```bash
-# 1. Clonar repositorio
-git clone https://github.com/jdCarrillo15/Proyecto-IO-modelos-de-colas.git
-cd Proyecto-IO-modelos-de-colas
-
-# 2. Instalar dependencias
-pip install -r requirements.txt
-
-# 3. Ejecutar simulación básica
-python sim_colas_animado.py
-
-# 4. Ejecutar tests
-python test_modelos.py
-
-# 5. Ver ejemplos de uso
-python ejemplos_uso.py
-```
-
----
-
-## 📚 Modelos Implementados
+## Modelos Implementados
 
 ### 1️⃣ M/M/1 - Un Servidor, Capacidad Infinita
 ```
@@ -195,7 +123,7 @@ Proyecto-IO-modelos-de-colas/
 │   │   └── fixes.css                    # Correcciones específicas
 │   │
 │   ├── js/
-│   │   ├── main.js                      # ⭐ Orquestador principal
+│   │   ├── main.js                      # Orquestador principal
 │   │   └── modules/
 │   │       ├── config.js                # Gestión de configuración
 │   │       ├── simulation-engine.js     # Motor de eventos discretos
@@ -209,16 +137,16 @@ Proyecto-IO-modelos-de-colas/
 │   └── assets/                          # Recursos adicionales
 │
 ├── 🐍 SCRIPTS PYTHON
-│   ├── teoria_colas.py                  # ⭐ Funciones analíticas M/M/1, M/M/c
-│   ├── sim_colas_animado.py            # ⭐ Simulación DES con matplotlib
+│   ├── teoria_colas.py                  # Funciones analíticas M/M/1, M/M/c
+│   ├── sim_colas_animado.py             # Simulación DES con matplotlib
 │   ├── visualizaciones.py               # Gráficos avanzados
 │   ├── test_modelos.py                  # Suite de tests unitarios
 │   ├── ejemplos_uso.py                  # Ejemplos y tutorial
 │   └── animacion-comparacion.py         # Comparación animada
 │
 ├── 📚 DOCUMENTACIÓN
-│   ├── README.md                        # ⭐ Este archivo (overview)
-│   ├── MANUAL_USUARIO.md               # ⭐ Manual completo del usuario
+│   ├── README.md                        # Este archivo (overview)
+│   ├── MANUAL_USUARIO.md                # Manual completo del usuario
 │   ├── INICIO.html                      # Página de bienvenida
 │   ├── GUIA_DEMO.md                    # Guía para demostrar el proyecto
 │   ├── INICIO_RAPIDO.md                # Tutorial express
@@ -233,24 +161,18 @@ Proyecto-IO-modelos-de-colas/
 
 ## 📖 Documentación
 
-| 📄 Documento | 📝 Descripción | 🎯 Audiencia |
-|-------------|---------------|-------------|
-| **[MANUAL_USUARIO.md](MANUAL_USUARIO.md)** | 📖 Manual completo con guías paso a paso | Todos los usuarios |
-| **[INICIO.html](INICIO.html)** | 🏠 Página de bienvenida con acceso rápido | Nuevos usuarios |
-| **[web-app/README.md](web-app/README.md)** | 🌐 Documentación técnica de la app web | Desarrolladores |
-| **[web-app/INSTRUCCIONES.md](web-app/INSTRUCCIONES.md)** | 📋 Instrucciones detalladas de uso | Usuarios web |
-| **[GUIA_DEMO.md](GUIA_DEMO.md)** | 🎬 Cómo demostrar el proyecto | Presentadores |
-| **[INICIO_RAPIDO.md](INICIO_RAPIDO.md)** | ⚡ Tutorial express (5 minutos) | Principiantes |
-| **[CORRECCIONES_APLICADAS.md](CORRECCIONES_APLICADAS.md)** | 🔧 Historial de correcciones | Desarrolladores |
-| **Este archivo (README.md)** | 📚 Visión general del proyecto | Todos |
+| 📄 Documento | 📝 Descripción |
+|-------------|---------------|
+| **[MANUAL_USUARIO.md](MANUAL_USUARIO.md)** | 📖 Manual completo con guías paso a paso |
+| **[INICIO.html](INICIO.html)** | 🏠 Página de bienvenida con acceso rápido |
+| **[web-app/README.md](web-app/README.md)** | 🌐 Documentación técnica de la app web |
+| **Este archivo (README.md)** | 📚 Visión general del proyecto |
 
 ### 🎯 ¿Qué documento leer?
 
 - 🆕 **Primera vez aquí?** → Empieza con [`INICIO.html`](INICIO.html) o [`MANUAL_USUARIO.md`](MANUAL_USUARIO.md)
 - 🌐 **Vas a usar la app web?** → Lee [`web-app/INSTRUCCIONES.md`](web-app/INSTRUCCIONES.md)
 - 🐍 **Vas a programar en Python?** → Revisa `ejemplos_uso.py`
-- 🎓 **Vas a enseñar/demostrar?** → Consulta [`GUIA_DEMO.md`](GUIA_DEMO.md)
-- ⚡ **Tienes prisa?** → Ve directo a [`INICIO_RAPIDO.md`](INICIO_RAPIDO.md)
 
 ---
 
@@ -727,49 +649,7 @@ python test_modelos.py
 
 ---
 
-## 👥 Contribución
-
-### ¿Cómo Contribuir?
-
-¡Las contribuciones son bienvenidas! Puedes ayudar con:
-
-- 🐛 **Reportar bugs**: Abre un issue describiendo el problema
-- ✨ **Nuevas características**: Propón mejoras o nuevos modelos
-- 📖 **Documentación**: Mejora las guías existentes
-- 🧪 **Tests**: Añade más casos de prueba
-- 🎨 **UI/UX**: Mejora la interfaz y experiencia
-
-### Proceso de Contribución
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Ideas para Contribuir
-
-- [ ] Agregar modelo M/G/1 (servicio general)
-- [ ] Implementar redes de colas (Jackson networks)
-- [ ] Añadir más distribuciones (Erlang, Hiperexponencial)
-- [ ] Crear modo "comparación lado a lado"
-- [ ] Exportar gráficas individuales como PNG
-- [ ] Agregar calculadora de nivel de servicio (SLA)
-- [ ] Modo "batch simulation" (múltiples réplicas)
-- [ ] Integración con Excel (import/export)
-
----
-
 ## 📄 Créditos y Licencia
-
-### Desarrollado Por
-
-- **Curso**: Investigación de Operaciones
-- **Institución**: Universidad Pedagógica y Tecnológica de Colombia (UPTC)
-- **Año**: 2025
-- **Repositorio**: [github.com/jdCarrillo15/Proyecto-IO-modelos-de-colas](https://github.com/jdCarrillo15/Proyecto-IO-modelos-de-colas)
-
-### Licencia
 
 Este proyecto es de uso **educativo** para el curso de Investigación de Operaciones de la UPTC.
 
@@ -779,13 +659,6 @@ Este proyecto es de uso **educativo** para el curso de Investigación de Operaci
 - Kleinrock, L. (1975). *Queueing Systems, Volume 1: Theory*
 - Taha, H. A. (2017). *Investigación de Operaciones*
 - Hillier, F. S., & Lieberman, G. J. (2015). *Introducción a la Investigación de Operaciones*
-
-### Agradecimientos
-
-- Chart.js por la librería de gráficos
-- GSAP por las animaciones suaves
-- Comunidad de Stack Overflow por el apoyo técnico
-- Profesores y estudiantes de la UPTC por el feedback
 
 ---
 
@@ -802,47 +675,6 @@ Este proyecto es de uso **educativo** para el curso de Investigación de Operaci
 | **Tests unitarios** | 15+ |
 | **Páginas de documentación** | 7+ |
 | **Browsers compatibles** | 4+ (Chrome, Edge, Firefox, Safari) |
-
----
-
-## 🎯 Próximos Pasos Recomendados
-
-### Para Estudiantes
-1. Lee el [**MANUAL_USUARIO.md**](MANUAL_USUARIO.md) completo
-2. Prueba el [**tutorial interactivo**](web-app/index.html) en la aplicación
-3. Simula los 4 modelos con diferentes parámetros
-4. Compara resultados con teoría (M/M/1 y M/M/c)
-5. Exporta y analiza los datos
-
-### Para Profesores
-1. Revisa la [**GUIA_DEMO.md**](GUIA_DEMO.md) para presentaciones
-2. Usa la app web para demos en clase
-3. Asigna ejercicios usando diferentes configuraciones
-4. Compara resultados de simulación vs teoría
-
-### Para Desarrolladores
-1. Explora el código en `web-app/js/modules/`
-2. Ejecuta los tests: `python test_modelos.py`
-3. Revisa [**CORRECCIONES_APLICADAS.md**](CORRECCIONES_APLICADAS.md)
-4. Considera contribuir con mejoras
-
----
-
-## 📞 Soporte y Contacto
-
-### ¿Necesitas Ayuda?
-
-- 📖 **Documentación**: Lee el [Manual de Usuario](MANUAL_USUARIO.md)
-- 🐛 **Reportar Bug**: [Crear Issue](../../issues)
-- 💡 **Sugerencias**: [Discussions](../../discussions)
-- 📧 **Email**: Contacta al curso de IO - UPTC
-
-### Enlaces Útiles
-
-- [🏠 Página de Inicio](INICIO.html)
-- [⚡ Inicio Rápido](INICIO_RAPIDO.md)
-- [🎬 Guía de Demo](GUIA_DEMO.md)
-- [🌐 Aplicación Web](web-app/index.html)
 
 ---
 
