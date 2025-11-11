@@ -1,3 +1,22 @@
+"""
+COMPARACIÓN ANIMADA DE MODELOS DE COLA
+========================================
+
+Este script muestra una comparación visual animada de los 4 modelos de cola
+implementados en el proyecto, simulando el flujo de clientes a través del sistema.
+
+Modelos:
+- M/M/1: Un servidor, capacidad infinita
+- M/M/c: Múltiples servidores, capacidad infinita
+- M/M/k/1: Un servidor, múltiples colas (capacidad limitada)
+- M/M/k/c: Múltiples servidores, múltiples colas (capacidad limitada)
+
+Uso:
+    python animacion-comparacion.py
+
+Autor: Proyecto IO - UPTC
+"""
+
 import random
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation

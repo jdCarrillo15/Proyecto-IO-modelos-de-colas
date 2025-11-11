@@ -1,13 +1,31 @@
 """
-Ejemplos de uso del proyecto de simulación de colas
+EJEMPLOS DE USO - Sistema de Simulación de Colas
+=================================================
 
-Este archivo contiene ejemplos prácticos de cómo usar las diferentes
-funcionalidades del proyecto.
+Este archivo contiene ejemplos prácticos y tutoriales para usar las diferentes
+funcionalidades del proyecto de simulación de colas.
+
+Contenido:
+1. Simulación básica M/M/1
+2. Validación con teoría analítica
+3. Simulación con múltiples servidores (M/M/c)
+4. Comparación de modelos
+5. Exportación de resultados
+6. Verificación de Ley de Little
+
+Uso:
+    python ejemplos_uso.py
+
+O ejecuta funciones individuales:
+    from ejemplos_uso import ejemplo_1_simulacion_basica
+    ejemplo_1_simulacion_basica()
+
+Autor: Proyecto IO - UPTC
 """
 
 import random
 from sim_colas_animado import MM1, MMC, MMK1, MMKC, ModelSpec, AnimatedComparison
-from teoría_colas import (
+from teoria_colas import (
     analytical_mm1, 
     analytical_mmc,
     compare_simulation_vs_theory,

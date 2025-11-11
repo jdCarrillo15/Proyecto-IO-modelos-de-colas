@@ -1,0 +1,185 @@
+/* Ajustes de texto en secciones */
+.sidebar-content > h2 {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+}
+
+/* Mejorar espaciado en cards de configuración */
+.card.glass-card {
+    padding: 10px 12px !important;
+}
+
+/* Ajustes para títulos de cards */
+.card h3 {
+    font-size: 0.8125rem !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 4px !important;
+}
+
+/* Estadísticas - mejor distribución */
+.stat-item {
+    padding: 8px 6px !important;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-value {
+    font-size: 1.375rem !important;
+    line-height: 1.1 !important;
+}
+
+.stat-label {
+    font-size: 0.6875rem !important;
+    line-height: 1.2 !important;
+    margin-top: 2px;
+}
+
+/* Ajustes de sliders */
+.slider-container {
+    margin-bottom: 0 !important;
+}
+
+/* Botones más compactos */
+.btn {
+    padding: 8px 14px !important;
+    font-size: 0.875rem !important;
+}
+
+.btn-large {
+    padding: 10px 16px !important;
+    font-size: 0.9375rem !important;
+}
+
+/* Tabs de modelo más legibles */
+.tab-btn {
+    font-size: 0.8125rem !important;
+    padding: 8px 6px !important;
+}
+
+/* Mejorar gauge de estabilidad */
+.stability-indicator {
+    padding: 10px !important;
+}
+
+/* Espaciado entre form groups */
+.parameters-form .form-group + .form-group {
+    margin-top: 0 !important;
+}
+
+/* Ajustar iconos en títulos */
+.section-title .icon {
+    line-height: 1 !important;
+}
+
+/* Prevenir desbordamiento de texto */
+* {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Mejorar contraste en labels */
+.form-label,
+.slider-label {
+    opacity: 0.9;
+}
+
+/* Asegurar que no haya scroll horizontal */
+.sidebar-content,
+.card {
+    max-width: 100%;
+}
+
+/* Ajuste para números en mono */
+.text-mono,
+.slider-value,
+.stat-value {
+    letter-spacing: -0.5px;
+}
+
+/* Botones en grupo más juntos */
+.btn-group {
+    gap: 6px !important;
+}
+
+.btn-group .btn {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Stats grid más compacto */
+.stats-grid {
+    gap: 8px !important;
+}
+
+/* Mejorar legibilidad en cards oscuras */
+[data-theme="dark"] .stat-item {
+    background: rgba(51, 65, 85, 0.6) !important;
+}
+
+[data-theme="dark"] .slider-value {
+    background: rgba(51, 65, 85, 0.8) !important;
+}
+
+/* Ajustar padding de content principal */
+.main-content {
+    padding: 16px !important;
+}
+
+/* Mejorar separación de secciones */
+.card + .card {
+    margin-top: 0 !important;
+}
+
+/* Ajustes responsive específicos */
+@media (max-width: 1400px) {
+    .stat-value {
+        font-size: 1.25rem !important;
+    }
+    
+    .card {
+        padding: 10px !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .section-title {
+        font-size: 1rem !important;
+    }
+    
+    .stat-value {
+        font-size: 1.125rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.625rem !important;
+    }
+}
+
+/* Fix para tooltip icons */
+.tooltip-icon {
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+/* Asegurar que el progreso se vea bien */
+.progress-bar {
+    height: 4px !important;
+}
+
+/* Mejorar visualización de valores numéricos */
+input[type="number"],
+.form-input {
+    font-size: 0.875rem !important;
+    padding: 6px 10px !important;
+}
+
+/* Ajustes finales para consistencia */
+.sidebar-left .card:first-of-type {
+    margin-top: 0;
+}
+
+.sidebar-left .card:last-of-type {
+    margin-bottom: 0;
+}

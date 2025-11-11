@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Interactivo de Simulación de Colas</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/fixes.css">
+</head>
+<body>
+    <!-- Main Container -->
+    <div id="app" class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">📊</span>
+                    <h1>Sistema de Simulación de Colas</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="toggleTheme" class="icon-btn" title="Cambiar tema">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button id="toggleTutorial" class="icon-btn" title="Modo tutorial">
+                        <span>🎓</span>
+                    </button>
+                    <button id="showHelp" class="icon-btn" title="Ayuda">
+                        <span>❓</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            
+            <!-- Left Sidebar: Configuration Panel -->
+            <aside id="configPanel" class="sidebar sidebar-left">
+                <div class="sidebar-content">
+                    <h2 class="section-title">
+                        <span class="icon">⚙️</span>
+                        Configuración
+                    </h2>
+                    
+                    <!-- Model Selector -->
+                    <div class="card glass-card">
+                        <h3 class="card-title">Modelo de Cola</h3>
+                        <div class="model-tabs">
+                            <button class="tab-btn active" data-model="mm1" title="Sistema con 1 servidor y capacidad infinita">M/M/1</button>
+                            <button class="tab-btn" data-model="mmc" title="Sistema con c servidores y capacidad infinita">M/M/c</button>
+                            <button class="tab-btn" data-model="mmk1" title="1 servidor con capacidad máxima k">M/M/k/1</button>
+                            <button class="tab-btn" data-model="mmkc" title="c servidores con capacidad máxima k">M/M/k/c</button>
+                        </div>
+                    </div>
+
+                    <!-- Parameters Configuration -->
+                    <div class="card glass-card">
+                        <h3 class="card-title">Parámetros del Sistema</h3>
+                        <div id="parametersForm" class="parameters-form">
+                            <!-- Dynamic content loaded by config.js -->
+                        </div>
+                    </div>
+
+                    <!-- Stability Indicator -->
+                    <div class="card glass-card">
+                        <h3 class="card-title">Estabilidad del Sistema</h3>
+                        <div id="stabilityIndicator" class="stability-indicator">
+                            <!-- Dynamic content loaded by stability.js -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button id="runSimulation" class="btn btn-primary btn-large">
+                            <span class="btn-icon">▶</span>
+                            Ejecutar Simulación
+                        </button>
+                        <div class="btn-group">
+                            <button id="pauseSimulation" class="btn btn-secondary" disabled>
+                                <span class="btn-icon">⏸</span>
+                                Pausar
+                            </button>
+                            <button id="resetSimulation" class="btn btn-secondary">
+                                <span class="btn-icon">🔄</span>
+                                Reiniciar
+                            </button>
+                        </div>
+                        <button id="exportResults" class="btn btn-accent" disabled>
+                            <span class="btn-icon">💾</span>
+                            Exportar Resultados
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Central Area: Animated Visualization -->
+            <main class="main-content">
+                <div class="visualization-container">
+                    <div class="viz-header">
+                        <h2 class="section-title">Visualización en Tiempo Real</h2>
+                        <div class="animation-controls">
+                            <label class="control-label">
+                                Velocidad:
+                                <select id="animationSpeed" class="speed-selector">
+                                    <option value="0.5">0.5x</option>
+                                    <option value="1" selected>1x</option>
+                                    <option value="2">2x</option>
+                                    <option value="5">5x</option>
+                                    <option value="10">10x</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Canvas for Network Animation -->
+                    <div class="canvas-wrapper">
+                        <canvas id="networkCanvas" class="network-canvas"></canvas>
+                        <div id="liveMetricsOverlay" class="live-metrics-overlay">
+                            <!-- Dynamic metrics loaded by visualization.js -->
+                        </div>
+                    </div>
+
+                    <!-- Simulation Progress -->
+                    <div class="progress-container">
+                        <div class="progress-info">
+                            <span id="progressLabel">Esperando inicio...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="charts-section">
+                        <div class="charts-tabs">
+                            <button class="chart-tab active" data-chart="timeseries">📈 Series Temporales</button>
+                            <button class="chart-tab" data-chart="distributions">📊 Distribuciones</button>
+                            <button class="chart-tab" data-chart="heatmap">🔥 Mapa de Calor</button>
+                        </div>
+                        <div class="charts-container">
+                            <div id="chartTimeseries" class="chart-panel active">
+                                <canvas id="timeseriesChart"></canvas>
+                            </div>
+                            <div id="chartDistributions" class="chart-panel">
+                                <canvas id="distributionsChart"></canvas>
+                            </div>
+                            <div id="chartHeatmap" class="chart-panel">
+                                <canvas id="heatmapChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar: Real-time Metrics -->
+            <aside id="metricsPanel" class="sidebar sidebar-right">
+                <div class="sidebar-content">
+                    <h2 class="section-title">
+                        <span class="icon">📊</span>
+                        Métricas en Tiempo Real
+                    </h2>
+
+                    <!-- Instantaneous Metrics -->
+                    <div class="card glass-card">
+                        <h3 class="card-title">Métricas Instantáneas</h3>
+                        <div id="instantMetrics" class="metrics-grid">
+                            <!-- Dynamic content loaded by metrics.js -->
+                        </div>
+                    </div>
+
+                    <!-- Theory vs Simulation -->
+                    <div id="theoryComparisonCard" class="card glass-card" style="display: none;">
+                        <h3 class="card-title">Teoría vs Simulación</h3>
+                        <div id="theoryComparison" class="comparison-grid">
+                            <!-- Dynamic content loaded by theory.js -->
+                        </div>
+                    </div>
+
+                    <!-- Accumulated Statistics -->
+                    <div class="card glass-card">
+                        <h3 class="card-title">Estadísticas Acumuladas</h3>
+                        <div id="accumulatedStats" class="stats-grid">
+                            <!-- Dynamic content loaded by metrics.js -->
+                        </div>
+                    </div>
+
+                    <!-- Server Status (for M/M/c and M/M/k/c) -->
+                    <div id="serverStatusCard" class="card glass-card" style="display: none;">
+                        <h3 class="card-title">Estado de Servidores</h3>
+                        <div id="serverStatus" class="server-grid">
+                            <!-- Dynamic content loaded by servers.js -->
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>✅ Simulación Completada</h2>
+                <button class="modal-close" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body" id="resultsContent">
+                <!-- Dynamic content loaded by results.js -->
+            </div>
+            <div class="modal-footer">
+                <button id="downloadJSON" class="btn btn-accent">
+                    <span class="btn-icon">💾</span>
+                    Descargar JSON
+                </button>
+                <button id="generateReport" class="btn btn-accent">
+                    <span class="btn-icon">📄</span>
+                    Generar Reporte HTML
+                </button>
+                <button id="newSimulation" class="btn btn-primary">
+                    <span class="btn-icon">🔄</span>
+                    Nueva Simulación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎓 Tutorial Interactivo</h2>
+                <button class="modal-close" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body" id="tutorialContent">
+                <!-- Content loaded by tutorial.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Procesando simulación...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JavaScript Modules -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
