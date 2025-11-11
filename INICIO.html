@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Inicio Rápido - Sistema de Simulación de Colas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .section p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .secondary-button {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .secondary-button:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .info-box strong {
+            color: #1976D2;
+        }
+        
+        .models {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .model-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .model-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .model-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .models {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Sistema de Simulación de Colas</h1>
+            <p>Aprende teoría de colas de forma visual e interactiva</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>✨ Características Principales</h2>
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Interfaz Moderna</div>
+                        <div class="feature-desc">Diseño elegante y fácil de usar</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">📈</div>
+                        <div class="feature-title">Gráficos en Vivo</div>
+                        <div class="feature-desc">Visualiza métricas en tiempo real</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Animaciones Fluidas</div>
+                        <div class="feature-desc">Ve el flujo de clientes</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">💾</div>
+                        <div class="feature-title">Exportación</div>
+                        <div class="feature-desc">Descarga resultados</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>¡Sin instalación requerida!</strong> Esta aplicación funciona completamente en tu navegador. 
+                No necesitas instalar Python ni ningún otro software.
+            </div>
+            
+            <div class="section">
+                <h2>🎯 Modelos Disponibles</h2>
+                <div class="models">
+                    <div class="model-card">
+                        <h3>M/M/1</h3>
+                        <p>Un servidor con capacidad infinita. Ideal para aprender los conceptos básicos.</p>
+                    </div>
+                    <div class="model-card">
+                        <h3>M/M/c</h3>
+                        <p>Múltiples servidores. Simula call centers o bancos con varias ventanillas.</p>
+                    </div>
+                    <div class="model-card">
+                        <h3>M/M/k/1</h3>
+                        <p>Un servidor con capacidad limitada. Para sistemas con espacio restringido.</p>
+                    </div>
+                    <div class="model-card">
+                        <h3>M/M/k/c</h3>
+                        <p>Múltiples servidores y capacidad limitada. El modelo más completo.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🚀 Comienza Ahora</h2>
+                <p>Haz clic en el botón de abajo para abrir la aplicación y empezar a simular:</p>
+                <div class="button-group">
+                    <a href="web-app/index.html" class="cta-button">
+                        ▶️ Abrir Aplicación
+                    </a>
+                    <a href="README.md" class="cta-button secondary-button">
+                        📚 Ver Documentación Completa
+                    </a>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📖 Guía Rápida</h2>
+                <p><strong>1.</strong> Selecciona un modelo de cola (M/M/1 es ideal para comenzar)</p>
+                <p><strong>2.</strong> Ajusta los parámetros λ (llegadas) y μ (servicio) con los sliders</p>
+                <p><strong>3.</strong> Observa el indicador de estabilidad (debe ser verde o amarillo)</p>
+                <p><strong>4.</strong> Haz clic en "Ejecutar Simulación" y observa la animación</p>
+                <p><strong>5.</strong> Analiza las métricas y gráficos en tiempo real</p>
+                <p><strong>6.</strong> Al finalizar, exporta los resultados si lo deseas</p>
+            </div>
+            
+            <div class="info-box" style="background: #fff3cd; border-left-color: #ffc107;">
+                <strong>💡 Tip:</strong> Si es tu primera vez, haz clic en el ícono de tutorial (🎓) 
+                en la aplicación para una guía paso a paso.
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Desarrollado para el curso de Investigación de Operaciones - UPTC</p>
+            <p>© 2024 - Proyecto Educativo</p>
+        </div>
+    </div>
+</body>
+</html>
