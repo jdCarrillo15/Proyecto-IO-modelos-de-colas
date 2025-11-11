@@ -132,11 +132,12 @@ export class SimulationEngine {
         // Verificar capacidad (para modelos con límite)
         const totalInSystem = this.queue.length + this.servers.filter(s => s.busy).length;
         const hasCapacityLimit = this.config.model === 'mmk1' || this.config.model === 'mmkc';
-        const maxCapacity = this.config.k || Infinity;
+        const maxCapacity = hasCapacityLimit ? (this.config.k || 10) : Infinity;
         
         if (hasCapacityLimit && totalInSystem >= maxCapacity) {
             // Rechazar cliente
             this.rejectedCount++;
+            console.log(`Cliente ${job.id} rechazado - Sistema lleno (${totalInSystem}/${maxCapacity})`);
         } else {
             // Intentar asignar a un servidor libre
             const freeServer = this.servers.find(s => !s.busy);
@@ -265,11 +266,19 @@ export class SimulationEngine {
             };
         }
         
-        // Utilización
-        const busyTime = this.servers.reduce((sum, s) => {
-            return sum + (s.busy ? (this.time - this.config.warmup) : 0);
-        }, 0);
-        const rho = busyTime / (effectiveTime * this.servers.length);
+        // Utilización correcta según el modelo
+        // M/M/1: ρ = λ/μ
+        // M/M/c: ρ = λ/(c×μ)
+        const lambda = this.config.lambda;
+        const mu = this.config.mu;
+        const c = this.servers.length;
+        
+        let rho;
+        if (c === 1) {
+            rho = lambda / mu;
+        } else {
+            rho = lambda / (c * mu);
+        }
         
         // Número promedio en sistema y cola
         const L = this.areaInSystem / effectiveTime;

@@ -302,6 +302,16 @@ class QueueSimulationApp {
                         <div class="result-label">Clientes Atendidos</div>
                         <div class="result-value">${results.totalServed}</div>
                     </div>
+                    ${(config.model === 'mmk1' || config.model === 'mmkc') ? `
+                    <div class="result-card">
+                        <div class="result-label">Clientes Rechazados</div>
+                        <div class="result-value" style="color: #EF4444;">${results.totalRejected}</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Tasa de Rechazo</div>
+                        <div class="result-value" style="color: #F59E0B;">${((results.totalRejected / (results.totalServed + results.totalRejected)) * 100).toFixed(2)}%</div>
+                    </div>
+                    ` : ''}
                 </div>
                 
                 ${this.generateTheoryComparison(metrics, config)}

@@ -61,13 +61,7 @@ Aplicación web interactiva para simular y visualizar modelos de teoría de cola
 
 ## 🚀 Cómo Usar
 
-### Opción 1: Abrir Directamente (Recomendado)
-1. Navega a la carpeta `web-app`
-2. Abre el archivo `index.html` en tu navegador favorito
-3. ¡Listo! La aplicación está completamente funcional sin servidor
-
-### Opción 2: Con Servidor Local (Opcional)
-Si prefieres usar un servidor local:
+### Con Servidor Local
 
 ```bash
 # Con Python 3

@@ -75,8 +75,14 @@ export class ConfigManager {
         
         // Actualizar UI de tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.model === modelType);
+            btn.classList.toggle('active', btn.dataset.model === modelType && !btn.disabled);
         });
+        
+        // Resetear simulación si hay una en curso
+        if (window.app && window.app.isRunning) {
+            console.log('🔄 Resetear simulación al cambiar modelo');
+            window.app.resetSimulation();
+        }
         
         // Renderizar formulario de parámetros
         this.renderParametersForm();
@@ -339,9 +345,11 @@ export class ConfigManager {
     }
 
     calculateRho(model = null) {
-        const { lambda, mu, c } = this.config;
+        const { lambda, mu, c, k } = this.config;
         const modelType = model || this.currentModel;
         
+        // Para modelos con capacidad limitada, ρ teórico usa la tasa efectiva
+        // pero para propósitos de visualización, mostramos ρ = λ/(cμ)
         if (modelType === 'mm1' || modelType === 'mmk1') {
             return lambda / mu;
         } else if (modelType === 'mmc' || modelType === 'mmkc') {
@@ -371,32 +379,50 @@ export class ConfigManager {
 
     validate(config) {
         // Validaciones básicas
-        if (config.lambda <= 0) {
-            return { valid: false, message: 'λ debe ser mayor que 0' };
+        if (!config.lambda || config.lambda <= 0) {
+            return { valid: false, message: '❌ λ (tasa de llegadas) debe ser mayor que 0' };
         }
         
-        if (config.mu <= 0) {
-            return { valid: false, message: 'μ debe ser mayor que 0' };
+        if (!config.mu || config.mu <= 0) {
+            return { valid: false, message: '❌ μ (tasa de servicio) debe ser mayor que 0' };
         }
         
-        if (config.horizon <= 0) {
-            return { valid: false, message: 'El horizonte debe ser mayor que 0' };
+        if (!config.horizon || config.horizon <= 0) {
+            return { valid: false, message: '❌ El horizonte de simulación debe ser mayor que 0' };
         }
         
         if (config.warmup < 0) {
-            return { valid: false, message: 'El warmup no puede ser negativo' };
+            return { valid: false, message: '❌ El periodo de warmup no puede ser negativo' };
         }
         
         if (config.warmup >= config.horizon) {
-            return { valid: false, message: 'El warmup debe ser menor que el horizonte' };
+            return { valid: false, message: '❌ El warmup debe ser menor que el horizonte de simulación' };
         }
         
-        if ((config.model === 'mmc' || config.model === 'mmkc') && config.c <= 0) {
-            return { valid: false, message: 'El número de servidores debe ser mayor que 0' };
+        // Validaciones específicas por modelo
+        if (config.model === 'mmc' || config.model === 'mmkc') {
+            if (!config.c || config.c < 1) {
+                return { valid: false, message: '❌ El número de servidores (c) debe ser al menos 1' };
+            }
+            
+            if (!Number.isInteger(config.c)) {
+                return { valid: false, message: '❌ El número de servidores (c) debe ser un número entero' };
+            }
         }
         
-        if ((config.model === 'mmk1' || config.model === 'mmkc') && config.k <= 0) {
-            return { valid: false, message: 'La capacidad debe ser mayor que 0' };
+        if (config.model === 'mmk1' || config.model === 'mmkc') {
+            if (!config.k || config.k < 1) {
+                return { valid: false, message: '❌ La capacidad máxima (k) debe ser al menos 1' };
+            }
+            
+            if (!Number.isInteger(config.k)) {
+                return { valid: false, message: '❌ La capacidad máxima (k) debe ser un número entero' };
+            }
+            
+            // Para M/M/k/c, k debe ser >= c
+            if (config.model === 'mmkc' && config.k < config.c) {
+                return { valid: false, message: '❌ La capacidad (k) debe ser mayor o igual al número de servidores (c)' };
+            }
         }
         
         // Verificar estabilidad

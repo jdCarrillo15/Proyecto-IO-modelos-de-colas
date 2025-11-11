@@ -58,16 +58,19 @@ export class VisualizationManager {
     }
 
     updateClients(simState) {
+        // Limitar número de clientes visuales para mejor rendimiento
+        const MAX_VISUAL_CLIENTS = 50;
+        
         // Sincronizar clientes visuales con el estado de la simulación
-        const queueIds = simState.queue.map(j => j.id);
+        const queueIds = simState.queue.slice(0, MAX_VISUAL_CLIENTS).map(j => j.id);
         const serverIds = simState.servers.filter(s => s.busy).map(s => s.currentJob.id);
         const allIds = [...queueIds, ...serverIds];
         
         // Eliminar clientes que ya no existen
         this.clients = this.clients.filter(c => allIds.includes(c.id));
         
-        // Agregar nuevos clientes
-        queueIds.forEach((id, index) => {
+        // Agregar nuevos clientes (solo los primeros para evitar sobrecarga)
+        queueIds.slice(0, 20).forEach((id, index) => {
             if (!this.clients.find(c => c.id === id)) {
                 this.clients.push({
                     id,
@@ -230,36 +233,59 @@ export class VisualizationManager {
         const node = this.nodes.servers;
         const numServers = servers.length;
         
+        // Calcular espaciado dinámico según número de servidores
+        const maxSpacing = 80;
+        const minSpacing = 50;
+        const spacing = numServers > 5 ? minSpacing : maxSpacing;
+        
         servers.forEach((server, i) => {
-            const y = node.y + (i - (numServers - 1) / 2) * 80;
+            const y = node.y + (i - (numServers - 1) / 2) * spacing;
             const isBusy = server.busy;
             
-            // Círculo
+            // Círculo con efecto de pulsación si está ocupado
             ctx.beginPath();
             ctx.arc(node.x, y, node.radius, 0, Math.PI * 2);
             ctx.fillStyle = isBusy ? '#059669' : '#475569';
             ctx.fill();
             ctx.strokeStyle = isBusy ? '#34D399' : '#64748B';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = isBusy ? 4 : 3;
             ctx.stroke();
             
+            // Glow effect para servidores ocupados
+            if (isBusy) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#10B981';
+                ctx.beginPath();
+                ctx.arc(node.x, y, node.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            
             // Icono
-            ctx.font = '20px sans-serif';
+            ctx.font = '22px sans-serif';
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(isBusy ? '💼' : '⏸', node.x, y);
+            ctx.fillText(isBusy ? '⚙️' : '�', node.x, y);
+            
+            // Número de servidor
+            ctx.font = 'bold 11px Inter';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`S${i + 1}`, node.x, y - node.radius - 8);
             
             // Estado
-            ctx.font = '12px Inter';
-            ctx.fillText(isBusy ? 'Ocupado' : 'Libre', node.x, y + node.radius + 15);
+            ctx.font = '11px Inter';
+            ctx.fillStyle = isBusy ? '#10B981' : '#94A3B8';
+            ctx.fillText(isBusy ? 'Ocupado' : 'Libre', node.x, y + node.radius + 12);
         });
         
-        // Label general
+        // Label general con contador
+        const busyCount = servers.filter(s => s.busy).length;
         ctx.font = 'bold 14px Inter';
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
-        ctx.fillText(node.label, node.x, node.y - 80);
+        const labelY = node.y - ((numServers - 1) / 2) * spacing - 50;
+        ctx.fillText(`${node.label} (${busyCount}/${numServers})`, node.x, labelY);
     }
 
     drawClients() {

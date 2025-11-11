@@ -37,8 +37,11 @@ export class ExportManager {
         console.log('Resultados exportados a JSON');
     }
 
-    generateReport(results) {
-        const html = this.createReportHTML(results);
+    async generateReport(results) {
+        // Capturar gráficas como base64
+        const chartImages = await this.captureCharts();
+        
+        const html = this.createReportHTML(results, chartImages);
         const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -47,10 +50,32 @@ export class ExportManager {
         a.click();
         URL.revokeObjectURL(url);
         
-        console.log('Reporte HTML generado');
+        console.log('Reporte HTML generado con gráficas embebidas');
+    }
+    
+    async captureCharts() {
+        const images = {};
+        
+        try {
+            // Capturar gráfico de series temporales
+            const tsCanvas = document.getElementById('timeseriesChart');
+            if (tsCanvas) {
+                images.timeseries = tsCanvas.toDataURL('image/png');
+            }
+            
+            // Capturar gráfico de distribuciones
+            const distCanvas = document.getElementById('distributionsChart');
+            if (distCanvas) {
+                images.distributions = distCanvas.toDataURL('image/png');
+            }
+        } catch (error) {
+            console.error('Error al capturar gráficas:', error);
+        }
+        
+        return images;
     }
 
-    createReportHTML(results) {
+    createReportHTML(results, chartImages = {}) {
         const { config, metrics, totalServed, totalRejected } = results;
         
         return `
@@ -150,8 +175,27 @@ export class ExportManager {
         </table>
     </div>
     
+    ${chartImages.timeseries || chartImages.distributions ? `
+    <div class="section">
+        <h2>📊 Gráficas de Resultados</h2>
+        ${chartImages.timeseries ? `
+        <div style="margin-bottom: 30px;">
+            <h3>Evolución Temporal</h3>
+            <img src="${chartImages.timeseries}" style="width: 100%; max-width: 800px; border: 1px solid #ddd; border-radius: 8px;" alt="Gráfica de series temporales">
+        </div>
+        ` : ''}
+        ${chartImages.distributions ? `
+        <div>
+            <h3>Distribución de Tiempos</h3>
+            <img src="${chartImages.distributions}" style="width: 100%; max-width: 800px; border: 1px solid #ddd; border-radius: 8px;" alt="Gráfica de distribuciones">
+        </div>
+        ` : ''}
+    </div>
+    ` : ''}
+    
     <div class="section info">
         <p><strong>Nota:</strong> Este reporte fue generado automáticamente por el Sistema de Simulación de Colas.</p>
+        <p><strong>Fecha de generación:</strong> ${new Date().toLocaleString('es-ES')}</p>
     </div>
 </body>
 </html>
