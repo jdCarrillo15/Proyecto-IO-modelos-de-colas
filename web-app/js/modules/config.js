@@ -57,7 +57,21 @@ export class ConfigManager {
             return;
         }
         
+        console.log(`📊 Cambiando a modelo: ${modelType}`);
         this.currentModel = modelType;
+        
+        // Establecer valores por defecto según el modelo
+        if (modelType === 'mmc' || modelType === 'mmkc') {
+            if (!this.config.c || this.config.c < 1) {
+                this.config.c = 3; // Valor por defecto
+            }
+        }
+        
+        if (modelType === 'mmk1' || modelType === 'mmkc') {
+            if (!this.config.k || this.config.k < 1) {
+                this.config.k = 10; // Valor por defecto
+            }
+        }
         
         // Actualizar UI de tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -73,6 +87,8 @@ export class ConfigManager {
 
     renderParametersForm() {
         const container = document.getElementById('parametersForm');
+        if (!container) return;
+        
         const model = this.modelDefinitions[this.currentModel];
         
         let html = '';
@@ -322,14 +338,16 @@ export class ConfigManager {
         `;
     }
 
-    calculateRho() {
+    calculateRho(model = null) {
         const { lambda, mu, c } = this.config;
+        const modelType = model || this.currentModel;
         
-        if (this.currentModel === 'mm1' || this.currentModel === 'mmk1') {
+        if (modelType === 'mm1' || modelType === 'mmk1') {
             return lambda / mu;
-        } else {
+        } else if (modelType === 'mmc' || modelType === 'mmkc') {
             return lambda / (c * mu);
         }
+        return lambda / mu; // fallback
     }
 
     getRhoColor(rho) {
@@ -382,7 +400,7 @@ export class ConfigManager {
         }
         
         // Verificar estabilidad
-        const rho = this.calculateRho();
+        const rho = this.calculateRho(config.model);
         const unstable = rho >= 1.0;
         
         return { 

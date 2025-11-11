@@ -41,9 +41,19 @@ export class SimulationEngine {
         this.reset();
         this.config = config;
         
+        // Validar configuración
+        if (!config.model) {
+            throw new Error('Modelo no especificado en la configuración');
+        }
+        
         // Inicializar servidores
-        const numServers = config.model === 'mm1' || config.model === 'mmk1' ? 1 : config.c;
-        this.servers = Array(numServers).fill().map(() => ({
+        let numServers = 1;
+        if (config.model === 'mmc' || config.model === 'mmkc') {
+            numServers = config.c || 1;
+        }
+        
+        this.servers = Array(numServers).fill().map((_, index) => ({
+            id: index,
             busy: false,
             busyUntil: 0,
             currentJob: null
@@ -53,12 +63,15 @@ export class SimulationEngine {
         this.nextArrival = this.exponential(config.lambda);
         this.scheduleEvent('arrival', this.nextArrival);
         
-        console.log('Simulación inicializada:', {
+        console.log('✅ Simulación inicializada:', {
             model: config.model,
             lambda: config.lambda,
             mu: config.mu,
+            c: config.c,
+            k: config.k,
             servers: this.servers.length,
-            horizon: config.horizon
+            horizon: config.horizon,
+            warmup: config.warmup
         });
     }
 

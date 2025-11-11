@@ -135,9 +135,10 @@ body {
 }
 
 .logo h1 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-primary);
+    white-space: nowrap;
 }
 
 .header-actions {
@@ -149,10 +150,11 @@ body {
 .main-layout {
     flex: 1;
     display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr var(--sidebar-width);
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    grid-template-columns: 340px 1fr 340px;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
     max-height: calc(100vh - var(--header-height));
+    overflow: hidden;
 }
 
 /* Sidebar */
@@ -160,12 +162,18 @@ body {
     background: var(--bg-card);
     border-radius: 12px;
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-content {
-    padding: var(--spacing-lg);
+    padding: 16px;
+    min-width: 0;
+    flex: 1;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -208,17 +216,20 @@ body {
 
 /* Section Titles */
 .section-title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--glass-border);
 }
 
 .section-title .icon {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
 }
 
 /* Typography */
@@ -228,10 +239,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h3.card-title {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.3;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--glass-border);
 }
 
 /* Utility Classes */
@@ -262,14 +276,25 @@ h3.card-title {
     }
 }
 
+@media (max-width: 1400px) {
+    .main-layout {
+        grid-template-columns: 300px 1fr 300px;
+        gap: var(--spacing-md);
+    }
+    
+    .logo h1 {
+        font-size: 1.125rem;
+    }
+}
+
 @media (max-width: 1200px) {
     .main-layout {
-        grid-template-columns: 260px 1fr 260px;
+        grid-template-columns: 280px 1fr 280px;
         gap: var(--spacing-sm);
     }
     
-    :root {
-        --sidebar-width: 260px;
+    .card {
+        padding: var(--spacing-sm);
     }
 }
 

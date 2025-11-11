@@ -99,8 +99,12 @@ class QueueSimulationApp {
         // Obtener configuración actual
         const config = this.config.getCurrentConfig();
         
+        console.log('📋 Configuración obtenida:', config);
+        
         // Validar configuración
         const validation = this.config.validate(config);
+        console.log('✓ Validación:', validation);
+        
         if (!validation.valid) {
             this.ui.showToast(validation.message, 'error');
             return;
@@ -124,6 +128,7 @@ class QueueSimulationApp {
             this.ui.showLoading('Iniciando simulación...');
             
             // Inicializar simulación
+            console.log('🚀 Iniciando simulación con modelo:', config.model);
             await this.simulation.initialize(config);
             
             // Reiniciar visualización y métricas
@@ -136,10 +141,11 @@ class QueueSimulationApp {
             // Iniciar loop de animación
             this.startAnimationLoop();
             
-            this.ui.showToast('Simulación iniciada', 'success');
+            this.ui.showToast(`Simulación ${config.model.toUpperCase()} iniciada`, 'success');
             
         } catch (error) {
-            console.error('Error al ejecutar simulación:', error);
+            console.error('❌ Error al ejecutar simulación:', error);
+            console.error('Stack trace:', error.stack);
             this.ui.showToast(`Error: ${error.message}`, 'error');
             this.isRunning = false;
             this.ui.setSimulationRunning(false);
