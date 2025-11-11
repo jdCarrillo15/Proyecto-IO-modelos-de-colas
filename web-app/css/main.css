@@ -153,8 +153,8 @@ body {
     grid-template-columns: 340px 1fr 340px;
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
-    max-height: calc(100vh - var(--header-height));
-    overflow: hidden;
+    min-height: calc(100vh - var(--header-height));
+    overflow: visible;
 }
 
 /* Sidebar */
@@ -166,6 +166,7 @@ body {
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
     min-width: 0;
+    max-height: calc(100vh - var(--header-height) - 2rem);
     display: flex;
     flex-direction: column;
 }
@@ -196,6 +197,7 @@ body {
     border-radius: 12px;
     padding: var(--spacing-lg);
     overflow-y: auto;
+    max-height: calc(100vh - var(--header-height) - 2rem);
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow-md);
 }
