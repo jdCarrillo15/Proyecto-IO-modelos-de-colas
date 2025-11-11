@@ -1,6 +1,6 @@
-# 📖 Manual de Usuario - Sistema de Simulación de Colas
+# Manual de Usuario - Sistema de Simulación de Colas
 
-## 🎯 Tabla de Contenidos
+## Tabla de Contenidos
 
 1. [Introducción](#introducción)
 2. [Requisitos del Sistema](#requisitos-del-sistema)
@@ -16,50 +16,49 @@
 
 ---
 
-## 📋 Introducción
+## Introducción
 
-### ¿Qué es este sistema?
+### Descripción del sistema
 
-El **Sistema de Simulación de Colas** es una aplicación web interactiva diseñada para simular y analizar sistemas de teoría de colas. Permite a estudiantes, profesores e investigadores visualizar el comportamiento de diferentes modelos de colas en tiempo real, comparar resultados con valores teóricos y exportar datos para análisis posterior.
+El Sistema de Simulación de Colas es una aplicación web interactiva diseñada para simular y analizar sistemas de teoría de colas. Permite a estudiantes, profesores e investigadores visualizar el comportamiento de diferentes modelos de colas en tiempo real, comparar resultados con valores teóricos y exportar datos para análisis posterior.
 
-### Características Principales
+### Características principales
 
-- ✨ **Interfaz moderna e intuitiva** con animaciones en tiempo real
-- 📊 **4 modelos de cola implementados** (M/M/1, M/M/c, M/M/k/1, M/M/k/c)
-- 📈 **Gráficas dinámicas** que se actualizan durante la simulación
-- 🎯 **Indicador de estabilidad visual** para análisis rápido
-- 📐 **Comparación con teoría** para modelos M/M/1 y M/M/c
-- 💾 **Exportación completa** a JSON y reportes HTML con gráficas
-- 🌓 **Tema claro/oscuro** según preferencia
-- 🎓 **Ideal para educación** en Investigación de Operaciones
+- Interfaz moderna e intuitiva con animaciones en tiempo real
+- 4 modelos de cola implementados (M/M/1, M/M/c, M/M/k/1, M/M/k/c)
+- Gráficas dinámicas que se actualizan durante la simulación
+- Indicador de estabilidad visual para análisis rápido
+- Comparación con teoría para modelos M/M/1 y M/M/c
+- Exportación completa a JSON y reportes HTML con gráficas
+- Tema claro/oscuro según preferencia del usuario
 
-### Casos de Uso
+### Casos de uso
 
-- **Educación:** Enseñanza de teoría de colas en cursos universitarios
-- **Investigación:** Análisis de sistemas de espera y dimensionamiento
-- **Análisis empresarial:** Evaluación de recursos (cajeros, servidores, etc.)
-- **Toma de decisiones:** Determinación del número óptimo de servidores
+- **Educación**: Enseñanza de teoría de colas en cursos universitarios
+- **Investigación**: Análisis de sistemas de espera y dimensionamiento
+- **Análisis empresarial**: Evaluación de recursos (cajeros, servidores, etc.)
+- **Toma de decisiones**: Determinación del número óptimo de servidores
 
 ---
 
-## 💻 Requisitos del Sistema
+## Requisitos del Sistema
 
-### Navegadores Compatibles
+### Navegadores compatibles
 
-- ✅ **Google Chrome** (v90+) - Recomendado
-- ✅ **Microsoft Edge** (v90+) - Recomendado
-- ✅ **Mozilla Firefox** (v88+)
-- ✅ **Safari** (v14+)
-- ⚠️ **Internet Explorer** - No compatible
+- Google Chrome (v90+) - Recomendado
+- Microsoft Edge (v90+) - Recomendado
+- Mozilla Firefox (v88+)
+- Safari (v14+)
+- Internet Explorer - No compatible
 
-### Requisitos Mínimos
+### Requisitos mínimos
 
-- **Sistema Operativo:** Windows 7+, macOS 10.12+, Linux (cualquier distribución moderna)
-- **RAM:** 2 GB mínimo, 4 GB recomendado
-- **Resolución:** 1280x720 mínimo, 1920x1080 recomendado
-- **Conexión a Internet:** Solo para carga inicial (CDN de librerías)
+- **Sistema Operativo**: Windows 7+, macOS 10.12+, Linux (cualquier distribución moderna)
+- **RAM**: 2 GB mínimo, 4 GB recomendado
+- **Resolución**: 1280x720 mínimo, 1920x1080 recomendado
+- **Conexión a Internet**: Solo para carga inicial (CDN de librerías)
 
-### Dependencias Externas (cargadas automáticamente)
+### Dependencias externas (cargadas automáticamente)
 
 - Chart.js v4.4.0 - Gráficos interactivos
 - GSAP v3.12.2 - Animaciones suaves
@@ -67,7 +66,7 @@ El **Sistema de Simulación de Colas** es una aplicación web interactiva diseñ
 
 ---
 
-## 🚀 Instalación y Configuración
+## Instalación y Configuración
 
 1. **Descarga o clona el repositorio:**
    ```bash
@@ -99,90 +98,89 @@ npm install -g http-server
 ```
 ---
 
-## 🎨 Interfaz de Usuario
+## Interfaz de Usuario
 
-### Componentes Principales
+### Componentes principales
 
-#### 1. Barra Superior (Header)
+#### 1. Barra superior
 
-- **Logo e título del sistema**
-- **Botón de tema** (🌙/☀️) - Cambiar entre modo oscuro y claro
-- **Botón de tutorial** (🎓) - Guía interactiva
-- **Botón de ayuda** (❓) - Información sobre modelos y métricas
+- Logo y título del sistema
+- Botón de tema para cambiar entre modo oscuro y claro
+- Botón de tutorial con guía interactiva
+- Botón de ayuda con información sobre modelos y métricas
 
-#### 2. Panel Izquierdo (Configuración)
+#### 2. Panel izquierdo (Configuración)
 
-**Selector de Modelo:**
+**Selector de Modelo**
 - 4 botones para elegir el modelo de cola
 - El modelo activo se resalta en azul
 
-**Parámetros del Sistema:**
+**Parámetros del Sistema**
 - Sliders interactivos para ajustar valores
-- Valores se actualizan en tiempo real
-- Tooltips informativos (ℹ️) al pasar el ratón
+- Valores que se actualizan en tiempo real
+- Tooltips informativos al pasar el ratón
 
-**Indicador de Estabilidad:**
+**Indicador de Estabilidad**
 - Gauge visual mostrando ρ (utilización)
 - Código de colores:
-  - 🟢 Verde (ρ < 0.7): Óptimo
-  - 🟡 Amarillo (0.7 ≤ ρ < 0.9): Aceptable
-  - 🟠 Naranja (0.9 ≤ ρ < 1.0): Crítico
-  - 🔴 Rojo (ρ ≥ 1.0): Inestable
+  - Verde (ρ < 0.7): Óptimo
+  - Amarillo (0.7 ≤ ρ < 0.9): Aceptable
+  - Naranja (0.9 ≤ ρ < 1.0): Crítico
+  - Rojo (ρ ≥ 1.0): Inestable
 
-**Botones de Acción:**
-- ▶️ **Ejecutar Simulación** - Inicia la simulación
-- ⏸️ **Pausar** - Pausa/reanuda la simulación
-- 🔄 **Reiniciar** - Resetea todo el sistema
-- 💾 **Exportar Resultados** - Guarda datos (habilitado al finalizar)
+**Botones de Acción**
+- Ejecutar Simulación: Inicia la simulación
+- Pausar: Pausa/reanuda la simulación
+- Reiniciar: Resetea todo el sistema
+- Exportar Resultados: Guarda datos (habilitado al finalizar)
 
-#### 3. Área Central (Visualización)
+#### 3. Área central (Visualización)
 
-**Control de Velocidad:**
+**Control de Velocidad**
 - Selector desplegable: 0.5x, 1x, 2x, 5x, 10x
-- Acelera o ralentiza la animación
+- Permite acelerar o ralentizar la animación
 
-**Canvas de Animación:**
-- 🚶 **Nodo de llegadas** (izquierda) - Punto de origen
-- 📦 **Cola** (centro) - Clientes esperando
-- ⚙️ **Servidores** (derecha) - Atendiendo clientes
+**Canvas de Animación**
+- Nodo de llegadas (izquierda): Punto de origen
+- Cola (centro): Clientes esperando
+- Servidores (derecha): Atendiendo clientes
 - Clientes representados como círculos de colores
 
-**Barra de Progreso:**
-- Muestra tiempo actual vs. horizonte total
+**Barra de Progreso**
+- Muestra tiempo actual vs horizonte total
 - Porcentaje de avance
 
-**Pestañas de Gráficas:**
-- 📈 **Series Temporales** - Evolución de L y Lq
-- 📊 **Distribuciones** - Histograma de tiempos de espera
-- 🔥 **Mapa de Calor** (próximamente)
+**Pestañas de Gráficas**
+- Series Temporales: Evolución de L y Lq
+- Distribuciones: Histograma de tiempos de espera
 
-#### 4. Panel Derecho (Métricas)
+#### 4. Panel derecho (Métricas)
 
-**Métricas Instantáneas:**
-- ρ - Utilización del sistema
-- L - Clientes en sistema
-- Lq - Clientes en cola
-- W - Tiempo en sistema
-- Wq - Tiempo en cola
+**Métricas Instantáneas**
+- ρ: Utilización del sistema
+- L: Clientes en sistema
+- Lq: Clientes en cola
+- W: Tiempo en sistema
+- Wq: Tiempo en cola
 
-**Teoría vs Simulación:**
+**Teoría vs Simulación**
 - Aparece solo si se activa "Comparar con Teoría"
 - Muestra valores teóricos y error porcentual
 
-**Estadísticas Acumuladas:**
+**Estadísticas Acumuladas**
 - Clientes atendidos
 - Clientes rechazados (modelos con capacidad)
 - Tiempo de simulación
 - Tiempo efectivo (sin warmup)
 
-**Estado de Servidores:**
+**Estado de Servidores**
 - Visible en modelos M/M/c y M/M/k/c
 - Muestra cada servidor (S1, S2, etc.)
 - Estado: Ocupado (verde) o Libre (gris)
 
 ---
 
-## 📚 Modelos de Cola Disponibles
+## Modelos de Cola Disponibles
 
 ### 1. M/M/1 - Un Servidor, Capacidad Infinita
 
@@ -216,7 +214,7 @@ Wq = ρ/(μ-λ)
 μ = 1.0
 Horizonte = 1000
 Warmup = 200
-✅ Comparar con teoría
+Comparar con teoría
 ```
 
 ---
@@ -249,7 +247,7 @@ Usa fórmulas de Erlang-C (más complejas, calculadas automáticamente)
 c = 2
 Horizonte = 1000
 Warmup = 200
-✅ Comparar con teoría
+Comparar con teoría
 ```
 
 ---
@@ -265,7 +263,7 @@ Sistema con un servidor y capacidad máxima k. Cuando el sistema está lleno (k 
 - k: Capacidad máxima del sistema (≥1)
 
 **Característica Especial:**
-- ⚠️ **Rechaza clientes** cuando hay k clientes en el sistema
+- **Rechaza clientes** cuando hay k clientes en el sistema
 - Muestra estadísticas de rechazo en resultados
 
 **Ejemplo de Uso:**
@@ -321,7 +319,7 @@ Warmup = 200
 
 ---
 
-## 🎮 Guía de Uso Paso a Paso
+## Guía de Uso Paso a Paso
 
 ### Simulación Básica (M/M/1)
 
@@ -343,17 +341,17 @@ Warmup = 200
 4. **Warmup** - Deja en 200
    - Periodo inicial que se descarta para eliminar efectos transitorios
 
-5. **Comparar con Teoría** - Activa esta opción (✅)
+5. **Comparar con Teoría** - Activa esta opción
    - Mostrará comparación con valores teóricos
 
 #### Paso 3: Verificar Estabilidad
 1. Observa el gauge en el panel izquierdo
-2. Debe mostrar: **ρ = 0.800**
-3. Estado: **"Aceptable"** (amarillo/verde)
+2. Debe mostrar: ρ = 0.800
+3. Estado: "Aceptable" (amarillo/verde)
 4. Gauge al 80%
 
 #### Paso 4: Ejecutar Simulación
-1. Haz clic en **"▶️ Ejecutar Simulación"**
+1. Haz clic en "Ejecutar Simulación"
 2. Confirma si aparece advertencia de inestabilidad (si ρ ≥ 1)
 3. La simulación comenzará automáticamente
 
@@ -373,12 +371,12 @@ Warmup = 200
    - Cambia a pestaña "Distribuciones" para ver histograma
 
 4. **Controles:**
-   - ⏸️ **Pausar** si necesitas detener temporalmente
-   - Cambia la **velocidad** si es muy lento (prueba 2x o 5x)
-   - 🔄 **Reiniciar** si quieres empezar de nuevo
+   - Pausar si necesitas detener temporalmente
+   - Cambia la velocidad si es muy lento (prueba 2x o 5x)
+   - Reiniciar si quieres empezar de nuevo
 
 #### Paso 6: Revisar Resultados
-1. Al finalizar, aparecerá un modal con **"✅ Simulación Completada"**
+1. Al finalizar, aparecerá un modal con "Simulación Completada"
 
 2. **Métricas Finales:**
    - ρ, L, Lq, W, Wq con valores finales
@@ -386,24 +384,24 @@ Warmup = 200
 
 3. **Comparación con Teoría:**
    - Tabla mostrando Simulación vs Teoría
-   - Error porcentual (debe ser < 5%)
+   - Error porcentual (debe ser menor al 5%)
 
 4. **Gráficas Finales:**
    - Evolución temporal completa
    - Distribución de tiempos de espera
 
 #### Paso 7: Exportar Datos (Opcional)
-1. **💾 Descargar JSON:**
+1. **Descargar JSON:**
    - Descarga archivo con todos los datos
-   - Formato: `simulacion-colas-[timestamp].json`
+   - Formato: simulacion-colas-[timestamp].json
    - Útil para análisis posterior en Python, R, Excel
 
-2. **📄 Generar Reporte HTML:**
+2. **Generar Reporte HTML:**
    - Crea reporte completo con gráficas embebidas
    - Se abre automáticamente en el navegador
    - Listo para imprimir o compartir
 
-3. **🔄 Nueva Simulación:**
+3. **Nueva Simulación:**
    - Cierra el modal y configura nuevos parámetros
 
 ---
@@ -424,8 +422,8 @@ Warmup = 200
 #### Qué Observar
 1. **Visualización de servidores:**
    - Verás 2 servidores etiquetados S1 y S2
-   - Ocupados: verde brillante ⚙️
-   - Libres: gris 💤
+   - Ocupados: verde brillante
+   - Libres: gris
 
 2. **Rechazos:**
    - Cuando el sistema tenga 8 clientes, los nuevos serán rechazados
@@ -438,23 +436,23 @@ Warmup = 200
 
 ---
 
-## ⚙️ Parámetros de Configuración
+## Parámetros de Configuración
 
 ### λ (Lambda) - Tasa de Llegadas
 
 **Rango:** 0.1 - 10.0 (ajustable)
 
 **Significado:**
-- Número promedio de clientes que **llegan** por unidad de tiempo
+- Número promedio de clientes que llegan por unidad de tiempo
 - Ejemplos:
-  - λ = 0.5 → En promedio, 1 cliente cada 2 unidades de tiempo
-  - λ = 2.0 → En promedio, 2 clientes por unidad de tiempo
+  - λ = 0.5: En promedio, 1 cliente cada 2 unidades de tiempo
+  - λ = 2.0: En promedio, 2 clientes por unidad de tiempo
 
-**Cómo Afecta:**
-- ↑ Mayor λ = Más llegadas = Sistema más cargado
-- ↓ Menor λ = Menos llegadas = Sistema más holgado
+**Cómo afecta:**
+- Mayor λ: Más llegadas, sistema más cargado
+- Menor λ: Menos llegadas, sistema más holgado
 
-**Valores Típicos:**
+**Valores típicos:**
 - Bajo: 0.5 - 2.0
 - Medio: 2.0 - 5.0
 - Alto: 5.0 - 10.0
@@ -466,16 +464,16 @@ Warmup = 200
 **Rango:** 0.1 - 15.0 (ajustable)
 
 **Significado:**
-- Número promedio de clientes que **un servidor puede atender** por unidad de tiempo
+- Número promedio de clientes que un servidor puede atender por unidad de tiempo
 - Ejemplos:
-  - μ = 1.0 → Servidor atiende 1 cliente por unidad de tiempo
-  - μ = 3.0 → Servidor atiende 3 clientes por unidad de tiempo
+  - μ = 1.0: Servidor atiende 1 cliente por unidad de tiempo
+  - μ = 3.0: Servidor atiende 3 clientes por unidad de tiempo
 
-**Cómo Afecta:**
-- ↑ Mayor μ = Servicio más rápido = Sistema más eficiente
-- ↓ Menor μ = Servicio más lento = Más congestión
+**Cómo afecta:**
+- Mayor μ: Servicio más rápido, sistema más eficiente
+- Menor μ: Servicio más lento, más congestión
 
-**Valores Típicos:**
+**Valores típicos:**
 - Lento: 0.5 - 1.5
 - Medio: 1.5 - 5.0
 - Rápido: 5.0 - 15.0
@@ -490,8 +488,8 @@ Warmup = 200
 - Cantidad de servidores trabajando en paralelo
 - Cada servidor tiene tasa μ
 
-**Cómo Afecta:**
-- ↑ Más servidores = Menor ρ por servidor = Menos espera
+**Cómo afecta:**
+- Más servidores: Menor ρ por servidor, menos espera
 - Capacidad total del sistema = c × μ
 
 **Recomendaciones:**
@@ -511,14 +509,14 @@ Warmup = 200
 - Número máximo de clientes que puede haber en el sistema simultáneamente
 - Incluye clientes en cola + clientes siendo atendidos
 
-**Cómo Afecta:**
-- ↓ Menor k = Más rechazos = Mayor pérdida de clientes
-- ↑ Mayor k = Menos rechazos = Mayor cola posible
+**Cómo afecta:**
+- Menor k: Más rechazos, mayor pérdida de clientes
+- Mayor k: Menos rechazos, mayor cola posible
 
 **Restricción en M/M/k/c:**
-- k debe ser ≥ c (al menos un lugar por servidor)
+- k debe ser mayor o igual que c (al menos un lugar por servidor)
 
-**Valores Típicos:**
+**Valores típicos:**
 - Muy limitado: k = 5-10
 - Limitado: k = 10-30
 - Amplio: k = 30-100
@@ -578,9 +576,9 @@ Warmup = 200
 
 ---
 
-## 📊 Interpretación de Resultados
+## Interpretación de Resultados
 
-### Métricas Principales
+### Métricas principales
 
 #### ρ (Rho) - Utilización del Sistema
 
@@ -593,13 +591,13 @@ Warmup = 200
 - M/M/c y M/M/k/c: ρ = λ/(c×μ)
 
 **Interpretación:**
-- **ρ < 0.7** (🟢): Sistema holgado, buen servicio
-- **0.7 ≤ ρ < 0.9** (🟡): Sistema aceptable, puede haber picos
-- **0.9 ≤ ρ < 1.0** (🟠): Sistema crítico, cerca de saturación
-- **ρ ≥ 1.0** (🔴): Sistema inestable, colas crecen indefinidamente
+- **ρ < 0.7**: Sistema holgado, buen servicio
+- **0.7 ≤ ρ < 0.9**: Sistema aceptable, puede haber picos
+- **0.9 ≤ ρ < 1.0**: Sistema crítico, cerca de saturación
+- **ρ ≥ 1.0**: Sistema inestable, colas crecen indefinidamente
 
 **Ejemplo:**
-- ρ = 0.80 → Servidores ocupados 80% del tiempo
+- ρ = 0.80: Servidores ocupados 80% del tiempo
 
 ---
 
@@ -724,9 +722,9 @@ Tasa de Rechazo = (Rechazados / (Atendidos + Rechazados)) × 100%
 | Wq | 4.1807 | 4.0000 | 4.52% |
 
 **Interpretación del Error:**
-- **< 5%**: Excelente concordancia ✅
+- **Menor al 5%**: Excelente concordancia
 - **5-10%**: Buena concordancia, aceptable
-- **> 10%**: Revisar parámetros o aumentar horizonte
+- **Mayor al 10%**: Revisar parámetros o aumentar horizonte
 
 **Causas de Error:**
 - Variabilidad estocástica (aleatorio)
@@ -736,7 +734,7 @@ Tasa de Rechazo = (Rechazados / (Atendidos + Rechazados)) × 100%
 
 ---
 
-## 💾 Exportación de Datos
+## Exportación de Datos
 
 ### Formato JSON
 
@@ -802,10 +800,10 @@ Tasa de Rechazo = (Rechazados / (Atendidos + Rechazados)) × 100%
 5. **Comparación con teoría** (si aplica)
 
 **Características:**
-- ✅ Autocontenido (no requiere conexión)
-- ✅ Listo para imprimir
-- ✅ Fácil de compartir por email
-- ✅ Formato profesional
+- Autocontenido (no requiere conexión)
+- Listo para imprimir
+- Fácil de compartir por email
+- Formato profesional
 
 **Uso:**
 - Reportes de tareas/proyectos
@@ -815,19 +813,19 @@ Tasa de Rechazo = (Rechazados / (Atendidos + Rechazados)) × 100%
 
 ---
 
-## 🔧 Solución de Problemas
+## Solución de Problemas
 
 ### Problema: La simulación no inicia
 
-**Posibles Causas:**
+**Posibles causas:**
 
 1. **Parámetros inválidos**
-   - ✅ Verificar que λ > 0 y μ > 0
-   - ✅ Verificar que horizonte > warmup
-   - ✅ En M/M/k/c: verificar k ≥ c
+   - Verificar que λ > 0 y μ > 0
+   - Verificar que horizonte > warmup
+   - En M/M/k/c: verificar k ≥ c
 
 2. **Sistema inestable (ρ ≥ 1)**
-   - ⚠️ Aparece advertencia
+   - Aparece advertencia
    - Puedes continuar, pero la cola crecerá indefinidamente
    - Solución: Reducir λ o aumentar μ/c
 
@@ -930,15 +928,15 @@ Tasa de Rechazo = (Rechazados / (Atendidos + Rechazados)) × 100%
 ### Problema: El tema no cambia
 
 **Solución:**
-1. Hacer clic en el botón (🌙/☀️)
+1. Hacer clic en el botón de cambio de tema (Luna/Sol)
 2. Limpiar caché del navegador (Ctrl+Shift+Del)
 3. Recargar página (F5)
 4. Si persiste: Limpiar localStorage
-   - F12 → Console → `localStorage.clear()`
+   - F12: Console: localStorage.clear()
 
 ---
 
-## ❓ Preguntas Frecuentes
+## Preguntas Frecuentes
 
 ### General
 
@@ -1046,7 +1044,7 @@ Al reportar un problema, incluye:
 
 ---
 
-## 📚 Referencias
+## Referencias
 
 ### Teoría de Colas
 - Taha, H. A. (2017). *Investigación de Operaciones*
@@ -1054,39 +1052,39 @@ Al reportar un problema, incluye:
 - Gross, D., & Harris, C. M. (1998). *Fundamentals of Queueing Theory*
 
 ### Recursos en Línea
-- [Queue Theory - Wikipedia](https://en.wikipedia.org/wiki/Queueing_theory)
-- [Little's Law](https://en.wikipedia.org/wiki/Little%27s_law)
-- [Erlang C Formula](https://en.wikipedia.org/wiki/Erlang_(unit))
+- Queue Theory - Wikipedia: https://en.wikipedia.org/wiki/Queueing_theory
+- Little's Law: https://en.wikipedia.org/wiki/Little%27s_law
+- Erlang C Formula: https://en.wikipedia.org/wiki/Erlang_(unit)
 
 ---
 
-## 📝 Historial de Versiones
+## Historial de Versiones
 
 ### Versión 2.0 - Noviembre 2025
-- ✅ 4 modelos completamente funcionales
-- ✅ Gráficas en modal de resultados
-- ✅ Distribuciones en tiempo real
-- ✅ Modelos con capacidad limitada
-- ✅ Estadísticas de rechazos
-- ✅ Optimización de rendimiento
-- ✅ Validaciones mejoradas
+- 4 modelos completamente funcionales
+- Gráficas en modal de resultados
+- Distribuciones en tiempo real
+- Modelos con capacidad limitada
+- Estadísticas de rechazos
+- Optimización de rendimiento
+- Validaciones mejoradas
 
 ### Versión 1.0 - Octubre 2025
-- ✅ Versión inicial
-- ✅ M/M/1 y M/M/c básicos
-- ✅ Interfaz web interactiva
-- ✅ Comparación con teoría
+- Versión inicial
+- M/M/1 y M/M/c básicos
+- Interfaz web interactiva
+- Comparación con teoría
 
 ---
 
-## 📄 Licencia y Créditos
+## Licencia
 
 **Proyecto:** Sistema de Simulación de Colas
 **Curso:** Investigación de Operaciones - UPTC
 **Año:** 2025
 
-**Desarrollado para fines educativos**
+Desarrollado para fines educativos.
 
 ---
 
-Para más información, consulta el `README.md` del proyecto.
+Para más información, consulta el README.md del proyecto.
